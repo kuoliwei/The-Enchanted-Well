@@ -219,6 +219,8 @@ public class CatManager : MonoBehaviour
 
         removeList.Clear();
 
+        Dictionary<int, List<int>> slotToPersons = new Dictionary<int, List<int>>();
+
         //slotToPersonIndex.Clear();
 
         // 依順位處理每個人
@@ -262,6 +264,14 @@ public class CatManager : MonoBehaviour
 
             personLastSlot[i] = finalSlot;
             best = finalSlot;
+
+            // 記錄 slot → persons
+            if (!slotToPersons.TryGetValue(finalSlot, out var list))
+            {
+                list = new List<int>();
+                slotToPersons[finalSlot] = list;
+            }
+            list.Add(i);
             // ============================================
 
             // 同一角度只允許一隻貓（原樣保留）
@@ -301,8 +311,24 @@ public class CatManager : MonoBehaviour
             );
 
             int slot = personLastSlot[personIndex];
+            float finalPercent = stablePercent;
 
-            cats[personIndex].UpdateHeadPosition(stablePercent);
+            // 如果同一個 slot 有多個人，只允許順位第一的人冒頭
+            if (slotToPersons.TryGetValue(slot, out var personsInSlot))
+            {
+                int allowedPerson = personsInSlot[0];
+                for (int k = 1; k < personsInSlot.Count; k++)
+                {
+                    if (personsInSlot[k] < allowedPerson)
+                        allowedPerson = personsInSlot[k];
+                }
+
+                if (personIndex != allowedPerson)
+                    finalPercent = 0f;
+            }
+
+            //cats[personIndex].UpdateHeadPosition(stablePercent);
+            cats[personIndex].UpdateHeadPosition(finalPercent);
             cats[personIndex].UpdateAngle(slot);
         }
     }
