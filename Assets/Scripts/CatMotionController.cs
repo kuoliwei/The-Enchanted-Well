@@ -18,6 +18,8 @@ public class CatMotionController : MonoBehaviour
     private float currentY;
 
     private bool hasReceivedFirstData = false;
+    public bool IsCollapsed { get; private set; }
+
 
     //[Header("Angle Snap Settings")]
     //[SerializeField]
@@ -83,11 +85,12 @@ public class CatMotionController : MonoBehaviour
     //}
     public void UpdateHeadPosition(float percent)
     {
-        // ★ 保證第一筆資料一定從 0 開始
+        // 保證第一筆資料一定從 0 開始
         if (!hasReceivedFirstData)
         {
             hasReceivedFirstData = true;
             targetY = yAt0;
+            IsCollapsed = true;   // 初始一定是縮頭
             return;
         }
 
@@ -97,18 +100,42 @@ public class CatMotionController : MonoBehaviour
         }
         else if (percent < 50f)
         {
+            IsCollapsed = false; // 允許冒頭，解除縮頭
             // 0 → 50：井底到井口，移動較慢、可精調
             targetY = Mathf.Lerp(yAt0, yAt50, percent / 50f);
         }
         else if (percent < 100f)
         {
+            IsCollapsed = false; // 允許冒頭，解除縮頭
             // 50 → 100：井口到完全冒出
             targetY = Mathf.Lerp(yAt50, yAt100, (percent - 50f) / 50f);
         }
         else
         {
+            IsCollapsed = false; // 允許冒頭，解除縮頭
             targetY = yAt100;
         }
     }
+    // ------------------------------------------------------
+    // ★ 強制立即縮頭（無平滑，立刻回到 0）
+    // ------------------------------------------------------
+    public void ForceCollapseToZero()
+    {
+        hasReceivedFirstData = true; // 避免被視為「第一筆資料」
+        targetY = yAt0;
+        currentY = yAt0;
 
+        Vector3 p = catVideo.localPosition;
+        p.y = yAt0;
+        catVideo.localPosition = p;
+
+        IsCollapsed = true;
+    }
+    // ★ 用於人離場：只設定 target，不硬切
+    public void BeginSmoothCollapse()
+    {
+        hasReceivedFirstData = true;
+        targetY = yAt0;
+        IsCollapsed = true;
+    }
 }

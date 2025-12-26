@@ -1,6 +1,7 @@
-using UnityEngine;
 using PoseSocket;
+using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Video;
 
 [System.Serializable]
@@ -40,15 +41,17 @@ public class CatManager : MonoBehaviour
     [SerializeField]
     private int[] snapAngles = { 0, 60, 120, 180, 240, 300, 360 };
 
-    // ======== ★ 新增：角度切換 threshold 設定 ========
+    [SerializeField] private int angleShift;
+
+    // ======== ★ 角度切換 threshold 設定 ========
     [Header("Angle Switch Threshold")]
     [SerializeField]
     private float angleSwitchThreshold = 20f;
 
-    // ======== ★ 新增：記錄每個人的上一個 slot ========
+    // ======== ★ 記錄每個人的上一個 slot ========
     private Dictionary<int, int> personLastSlot = new Dictionary<int, int>();
 
-    // ======== ★ 新增：skeletonPercent 變更門檻設定 ========
+    // ======== ★ skeletonPercent 變更門檻設定 ========
     [Header("Skeleton Percent Switch Threshold")]
     [SerializeField]
     private int skeletonPercentThresholdCount = 30;   // 連續幾筆才允許變更（可在 Inspector 調整）
@@ -153,10 +156,36 @@ public class CatManager : MonoBehaviour
                 catToVideoIndex.Remove(lastCat);
             }
 
-            DestroyImmediate(lastCat.gameObject);
+            //DestroyImmediate(lastCat.gameObject);
+            RemoveCatWithCollapse(lastCat);
             cats.RemoveAt(cats.Count - 1);
         }
 
+    }
+    private void RemoveCatWithCollapse(CatMotionController cat)
+    {
+        cat.BeginSmoothCollapse();
+        StartCoroutine(DestroyCatAfterDelay(cat, 1));
+    }
+
+    private IEnumerator DestroyCatAfterDelay(CatMotionController cat, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (cat != null)
+            Destroy(cat.gameObject);
+    }
+    private void SmoothRemoveAllCats()
+    {
+        for (int i = cats.Count - 1; i >= 0; i--)
+        {
+            RemoveCatWithCollapse(cats[i]);
+        }
+
+        cats.Clear();
+        personLastSlot.Clear();
+        skeletonPercentCounters.Clear();
+        ResetAvailableCats();
     }
 
     private void AssignRandomCatVideoSet(CatMotionController cat)
@@ -201,7 +230,8 @@ public class CatManager : MonoBehaviour
         int personCount = angles.Count;
         if (personCount <= 0)
         {
-            ClearAllCatsImmediate();
+            //ClearAllCatsImmediate();
+            SmoothRemoveAllCats();
             return;
         }
         // 移除已離場的 personIndex（避免殘留狀態）
@@ -230,7 +260,7 @@ public class CatManager : MonoBehaviour
 
             // 座標轉換（原樣保留）
             float ext = Mathf.Repeat(rawAngle, 360f);
-            float internalAngle = 270f - ext;
+            float internalAngle = angleShift - ext;
             if (internalAngle < 0f) internalAngle += 360f;
 
             // 量化到 slot
@@ -324,7 +354,14 @@ public class CatManager : MonoBehaviour
                 }
 
                 if (personIndex != allowedPerson)
+                {
                     finalPercent = 0f;
+                    // 立刻強制縮頭，避免瞬間重疊
+                    //cats[personIndex].ForceCollapseToZero();
+                    if (!cats[personIndex].IsCollapsed)
+                        cats[personIndex].ForceCollapseToZero();
+
+                }
             }
 
             //cats[personIndex].UpdateHeadPosition(stablePercent);
