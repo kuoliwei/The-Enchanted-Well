@@ -27,7 +27,7 @@ public class CatMotionTestSimulator : MonoBehaviour
         = new List<float>();
 
     [Header("Auto Update")]
-    public bool liveUpdate = true;
+    public bool liveUpdate = false;
 
     // 重用容器，避免每幀 GC
     //private readonly List<float> testAngles = new List<float>(1);

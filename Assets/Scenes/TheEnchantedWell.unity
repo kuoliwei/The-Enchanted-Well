@@ -1660,6 +1660,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658d0b0a9506d0c4ebfc7bc1bea637d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spawnMode: 1
   poseReceiver: {fileID: 783487313}
   catPrefab: {fileID: 2031728233785892491, guid: 9959c544178e30148a74de618b82660f, type: 3}
   catParent: {fileID: 1643130631}

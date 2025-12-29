@@ -12,6 +12,16 @@ public class CatVideoSet
 
 public class CatManager : MonoBehaviour
 {
+    public enum CatSpawnMode
+    {
+        PersonDriven, // 舊機制
+        SlotDriven    // 新機制
+    }
+
+    [Header("Cat Spawn Mode")]
+    [SerializeField]
+    private CatSpawnMode spawnMode = CatSpawnMode.PersonDriven;
+
     [Header("Data Source")]
     [SerializeField] private PoseDataReceiver poseReceiver;
 
@@ -36,6 +46,10 @@ public class CatManager : MonoBehaviour
     // 記錄每隻貓使用的是哪一個影片 index（用來回收）
     private Dictionary<CatMotionController, int> catToVideoIndex
         = new Dictionary<CatMotionController, int>();
+
+    // SlotDriven 專用：slot → cat
+    private Dictionary<int, CatMotionController> slotToCat
+        = new Dictionary<int, CatMotionController>();
 
     [Header("Angle Snap Settings")]
     [SerializeField]
@@ -173,7 +187,12 @@ public class CatManager : MonoBehaviour
         yield return new WaitForSeconds(delay);
 
         if (cat != null)
+        {
+            // 回收影片 index（關鍵）
+            RecycleCatVideo(cat);
+
             Destroy(cat.gameObject);
+        }
     }
     private void SmoothRemoveAllCats()
     {
@@ -186,6 +205,14 @@ public class CatManager : MonoBehaviour
         personLastSlot.Clear();
         skeletonPercentCounters.Clear();
         ResetAvailableCats();
+    }
+    private void RecycleCatVideo(CatMotionController cat)
+    {
+        if (catToVideoIndex.TryGetValue(cat, out int index))
+        {
+            availableCatIndices.Add(index);
+            catToVideoIndex.Remove(cat);
+        }
     }
 
     private void AssignRandomCatVideoSet(CatMotionController cat)
@@ -230,8 +257,21 @@ public class CatManager : MonoBehaviour
         int personCount = angles.Count;
         if (personCount <= 0)
         {
-            //ClearAllCatsImmediate();
-            SmoothRemoveAllCats();
+            if (spawnMode == CatSpawnMode.PersonDriven)
+            {
+                SmoothRemoveAllCats();
+            }
+            else if (spawnMode == CatSpawnMode.SlotDriven)
+            {
+                // SlotDriven 清場（重點）
+                foreach (var cat in slotToCat.Values)
+                {
+                    RemoveCatWithCollapse(cat);
+                }
+
+                slotToCat.Clear();
+            }
+
             return;
         }
         // 移除已離場的 personIndex（避免殘留狀態）
@@ -286,9 +326,16 @@ public class CatManager : MonoBehaviour
             if (personLastSlot.TryGetValue(i, out int lastSlot))
             {
                 float distFromLast = Mathf.Abs(internalAngle - lastSlot);
+
                 if (distFromLast < angleSwitchThreshold)
                 {
+                    // 還在切換門檻內 → 沿用舊 slot
                     finalSlot = lastSlot;
+                }
+                else
+                {
+                    // 真正換 slot → 重置 skeletonPercent
+                    skeletonPercentCounters.Remove(i);
                 }
             }
 
@@ -314,7 +361,7 @@ public class CatManager : MonoBehaviour
 
         // 確保貓數量 = 有效 slot 數
         //EnsureCatCount(slotToPersonIndex.Count);
-        EnsureCatCount(personCount);
+        //EnsureCatCount(personCount);
 
         //int catIndex = 0;
         //foreach (var kvp in slotToPersonIndex)
@@ -333,42 +380,179 @@ public class CatManager : MonoBehaviour
         //    catIndex++;
         //}
 
-        for (int personIndex = 0; personIndex < personCount; personIndex++)
+
+        if (spawnMode == CatSpawnMode.PersonDriven)
         {
-            float stablePercent = GetStableSkeletonPercent(
-                personIndex,
-                skeletonPercent[personIndex]
-            );
+            EnsureCatCount(personCount);
 
-            int slot = personLastSlot[personIndex];
-            float finalPercent = stablePercent;
-
-            // 如果同一個 slot 有多個人，只允許順位第一的人冒頭
-            if (slotToPersons.TryGetValue(slot, out var personsInSlot))
+            for (int personIndex = 0; personIndex < personCount; personIndex++)
             {
-                int allowedPerson = personsInSlot[0];
-                for (int k = 1; k < personsInSlot.Count; k++)
+                float stablePercent = GetStableSkeletonPercent(
+                    personIndex,
+                    skeletonPercent[personIndex]
+                );
+
+                int slot = personLastSlot[personIndex];
+                float finalPercent = stablePercent;
+
+                // 如果同一個 slot 有多個人，只允許順位第一的人冒頭
+                if (slotToPersons.TryGetValue(slot, out var personsInSlot))
                 {
-                    if (personsInSlot[k] < allowedPerson)
-                        allowedPerson = personsInSlot[k];
+                    //int allowedPerson = personsInSlot[0];
+                    //for (int k = 1; k < personsInSlot.Count; k++)
+                    //{
+                    //    if (personsInSlot[k] < allowedPerson)
+                    //        allowedPerson = personsInSlot[k];
+                    //}
+                    //int allowedPerson = personsInSlot[0];
+                    //float bestDist = float.MaxValue;
+
+                    //for (int k = 0; k < personsInSlot.Count; k++)
+                    //{
+                    //    int candidatePerson = personsInSlot[k];
+
+                    //    float rawAngle = angles[candidatePerson];
+                    //    float ext = Mathf.Repeat(rawAngle, 360f);
+                    //    float internalAngle = angleShift - ext;
+                    //    if (internalAngle < 0f) internalAngle += 360f;
+
+                    //    float dist = Mathf.Abs(Mathf.DeltaAngle(internalAngle, slot));
+
+                    //    if (dist < bestDist)
+                    //    {
+                    //        bestDist = dist;
+                    //        allowedPerson = candidatePerson;
+                    //    }
+                    //}
+                    int allowedPerson = GetClosestPersonToSlot(slot, personsInSlot, angles);
+
+
+                    if (personIndex != allowedPerson)
+                    {
+                        finalPercent = 0f;
+                        // 立刻強制縮頭，避免瞬間重疊
+                        //cats[personIndex].ForceCollapseToZero();
+                        if (!cats[personIndex].IsCollapsed)
+                            cats[personIndex].ForceCollapseToZero();
+
+                    }
                 }
 
-                if (personIndex != allowedPerson)
-                {
-                    finalPercent = 0f;
-                    // 立刻強制縮頭，避免瞬間重疊
-                    //cats[personIndex].ForceCollapseToZero();
-                    if (!cats[personIndex].IsCollapsed)
-                        cats[personIndex].ForceCollapseToZero();
+                //cats[personIndex].UpdateHeadPosition(stablePercent);
+                cats[personIndex].UpdateHeadPosition(finalPercent);
+                cats[personIndex].UpdateAngle(slot);
+            }
+        }
+        else if (spawnMode == CatSpawnMode.SlotDriven)
+        {
+            // 目前有人的 slot
+            var activeSlotSet = new HashSet<int>(slotToPersons.Keys);
 
+            // 移除「已經沒人」的 slot（先縮頭再刪）
+            var removeSlots = new List<int>();
+            foreach (var kv in slotToCat)
+            {
+                if (!activeSlotSet.Contains(kv.Key))
+                {
+                    RemoveCatWithCollapse(kv.Value);
+                    cats.Remove(kv.Value); // 關鍵：同步移除
+                    removeSlots.Add(kv.Key);
                 }
             }
 
-            //cats[personIndex].UpdateHeadPosition(stablePercent);
-            cats[personIndex].UpdateHeadPosition(finalPercent);
-            cats[personIndex].UpdateAngle(slot);
+            for (int i = 0; i < removeSlots.Count; i++)
+                slotToCat.Remove(removeSlots[i]);
+
+            // 為「新出現的 slot」生成貓
+            foreach (int slot in activeSlotSet)
+            {
+                if (!slotToCat.ContainsKey(slot))
+                {
+                    var newCat = Instantiate(catPrefab, catParent);
+                    AssignRandomCatVideoSet(newCat);
+                    slotToCat.Add(slot, newCat);
+                }
+            }
+
+            // 更新每個 slot 對應的貓（不會再換）
+            foreach (var kv in slotToCat)
+            {
+                int slot = kv.Key;
+                var cat = kv.Value;
+
+                var personsInSlot = slotToPersons[slot];
+
+                // 取該 slot 中順位最前面的人
+                //int allowedPerson = personsInSlot[0];
+                //for (int k = 1; k < personsInSlot.Count; k++)
+                //{
+                //    if (personsInSlot[k] < allowedPerson)
+                //        allowedPerson = personsInSlot[k];
+                //}
+
+                //int allowedPerson = personsInSlot[0];
+                //float bestDist = float.MaxValue;
+
+                //for (int k = 0; k < personsInSlot.Count; k++)
+                //{
+                //    int candidatePerson = personsInSlot[k];
+
+                //    float rawAngle = angles[candidatePerson];
+                //    float ext = Mathf.Repeat(rawAngle, 360f);
+                //    float internalAngle = angleShift - ext;
+                //    if (internalAngle < 0f) internalAngle += 360f;
+
+                //    float dist = Mathf.Abs(Mathf.DeltaAngle(internalAngle, slot));
+
+                //    if (dist < bestDist)
+                //    {
+                //        bestDist = dist;
+                //        allowedPerson = candidatePerson;
+                //    }
+                //}
+
+                int allowedPerson = GetClosestPersonToSlot(slot, personsInSlot, angles);
+
+                float stablePercent = GetStableSkeletonPercent(
+                    allowedPerson,
+                    skeletonPercent[allowedPerson]
+                );
+
+                cat.UpdateAngle(slot);
+                cat.UpdateHeadPosition(stablePercent);
+            }
         }
     }
+    private int GetClosestPersonToSlot(
+    int slot,
+    List<int> personsInSlot,
+    List<float> angles
+)
+    {
+        int bestPerson = personsInSlot[0];
+        float bestDist = float.MaxValue;
+
+        for (int k = 0; k < personsInSlot.Count; k++)
+        {
+            int candidatePerson = personsInSlot[k];
+
+            float rawAngle = angles[candidatePerson];
+            float ext = Mathf.Repeat(rawAngle, 360f);
+            float internalAngle = angleShift - ext;
+            if (internalAngle < 0f) internalAngle += 360f;
+
+            float dist = Mathf.Abs(Mathf.DeltaAngle(internalAngle, slot));
+
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                bestPerson = candidatePerson;
+            }
+        }
+
+        return bestPerson;
+    }
+
     public void NotifySimulationFrame()
     {
         lastFrameTime = Time.time;
