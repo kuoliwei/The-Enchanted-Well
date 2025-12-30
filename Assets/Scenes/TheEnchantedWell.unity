@@ -1678,6 +1678,9 @@ MonoBehaviour:
     - {fileID: 32900000, guid: d2675d553d0a0a048a96906e22d9dd1e, type: 3}
     - {fileID: 32900000, guid: 51192da874eb8974aa87d5d692732e10, type: 3}
   timeoutSeconds: 3
+  riseTo50Duration: 1
+  holdAt50Duration: 2
+  riseTo100Duration: 1
   snapAngles: 3c0000006900000096000000c3000000
   angleShift: -45
   angleSwitchThreshold: 15

@@ -40,10 +40,10 @@ public class CatMotionTestSimulator : MonoBehaviour
 
     private void Update()
     {
-        if (!liveUpdate || catManager == null)
-            return;
-
-        Apply();
+        if (liveUpdate && catManager != null)
+        {
+            Apply();
+        }
     }
 
     public void Apply()
@@ -69,6 +69,6 @@ public class CatMotionTestSimulator : MonoBehaviour
         catManager.HandleSkeletonData(testAngles, testPercents);
 
         // 同時刷新時間，避免 timeout 清貓
-        catManager.NotifySimulationFrame();
+        //catManager.NotifySimulationFrame();
     }
 }
