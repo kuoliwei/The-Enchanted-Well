@@ -99,7 +99,7 @@ public class CatVideoPlayerController : MonoBehaviour
             return;
 
         vp.clip = videoClips[currentIndex];
-        vp.time = 0;
+        //vp.time = 0;
         vp.Play();
     }
 

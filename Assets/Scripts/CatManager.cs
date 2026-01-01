@@ -21,11 +21,8 @@ public class CatManager : MonoBehaviour
     private enum SlotHeadState
     {
         Idle,       // 尚未觸發
-        RisingTo50,
         HoldAt50,
-        RisingTo100,
         HoldAt100,
-        Collapsing
     }
 
     [Header("Cat Spawn Mode")]
@@ -67,13 +64,18 @@ public class CatManager : MonoBehaviour
         = new Dictionary<int, SlotHeadStateData>();
 
     [Header("Slot Head Timing")]
-    [SerializeField] private float riseTo50Duration = 0.3f;
-    [SerializeField] private float holdAt50Duration = 0.8f;
-    [SerializeField] private float riseTo100Duration = 0.3f;
+    //[SerializeField] private float riseTo50Duration;
+    [SerializeField] private float holdAt50Duration;
+    [SerializeField] private float waitFor100Duration;
+    //[SerializeField] private float riseTo100Duration;
 
     [Header("Angle Snap Settings")]
     [SerializeField]
     private int[] snapAngles = { 0, 60, 120, 180, 240, 300, 360 };
+
+    [Header("Slot Range Settings")]
+    [SerializeField]
+    private float slotAngleRange = 20f; // ±多少度內才算進 slot
 
     [SerializeField] private int angleShift;
 
@@ -89,6 +91,9 @@ public class CatManager : MonoBehaviour
     [Header("Skeleton Percent Switch Threshold")]
     [SerializeField]
     private int skeletonPercentThresholdCount = 30;   // 連續幾筆才允許變更（可在 Inspector 調整）
+
+    // SlotDriven：正在移除中的 slot（避免重複觸發與重生）
+    private HashSet<int> slotRemoving = new HashSet<int>();
 
     // 每個人的 skeleton 百分比穩定狀態
     private class SkeletonPercentCounter
@@ -115,18 +120,17 @@ public class CatManager : MonoBehaviour
 
     private void Update()
     {
-
         durationOfInterruption += Time.deltaTime;
         // 資料中斷偵測
         if (durationOfInterruption > timeoutSeconds)
         {
             Debug.Log($"durationOfInterruption:{durationOfInterruption}");
-            if (cats.Count > 0)
+            if (spawnMode == CatSpawnMode.PersonDriven && cats.Count > 0)
             {
                 SmoothRemoveAllCats();
                 Debug.Log("[CatManager] 資料中斷，立即清空所有貓");
             }
-            if (slotToCat.Count > 0)
+            if (spawnMode == CatSpawnMode.SlotDriven && slotToCat.Count > 0)
             {
                 SmoothRemoveAllCats();
                 Debug.Log("[CatManager] 資料中斷，立即清空所有貓");
@@ -144,7 +148,6 @@ public class CatManager : MonoBehaviour
         //    }
         //    SmoothRemoveAllCats();
         //}
-
     }
     private void ResetAvailableCats()
     {
@@ -173,10 +176,32 @@ public class CatManager : MonoBehaviour
     // 立即刪除，不等 frame 結束
     private void ClearAllCatsImmediate()
     {
-        for (int i = 0; i < cats.Count; i++)
-            DestroyImmediate(cats[i].gameObject);
+        if (spawnMode == CatSpawnMode.PersonDriven)
+        {
+            for (int i = cats.Count - 1; i >= 0; i--)
+            {
+                DestroyImmediate(cats[i]);
+            }
+        }
 
-        cats.Clear();
+        if (spawnMode == CatSpawnMode.SlotDriven)
+        {
+            foreach (var slot in slotToCat.Keys)
+            {
+                DestroyImmediate(slotToCat[slot]);
+            }
+        }
+        if (spawnMode == CatSpawnMode.PersonDriven)
+        {
+            cats.Clear();
+        }
+
+        if (spawnMode == CatSpawnMode.SlotDriven)
+        {
+            slotToCat.Clear();
+        }
+
+        slotRemoving.Clear();
         personLastSlot.Clear(); // 避免舊角度殘留
         skeletonPercentCounters.Clear(); // 同步清空百分比狀態
         ResetAvailableCats(); // 重置可抽貓池
@@ -220,12 +245,16 @@ public class CatManager : MonoBehaviour
     }
     private void RemoveCatWithCollapse(CatMotionController cat)
     {
-        cat.BeginSmoothCollapse();
         StartCoroutine(DestroyCatAfterDelay(cat, 1));
     }
 
     private IEnumerator DestroyCatAfterDelay(CatMotionController cat, float delay)
     {
+        yield return new WaitUntil(() => cat.isReached100);
+        yield return new WaitUntil(() => !cat.isForceUpdateHeadPosition);
+        Debug.Log($"isReached100:{cat.isReached100},\n isForceUpdateHeadPosition:{cat.isForceUpdateHeadPosition}");
+
+        cat.BeginSmoothCollapse();
         yield return new WaitForSeconds(delay);
 
         if (cat != null)
@@ -238,22 +267,78 @@ public class CatManager : MonoBehaviour
     }
     private void SmoothRemoveAllCats()
     {
-        //for (int i = cats.Count - 1; i >= 0; i--)
-        //{
-        //    RemoveCatWithCollapse(cats[i]);
-        //}
-        foreach (var slot in slotToCat.Keys)
+        if (spawnMode == CatSpawnMode.PersonDriven)
         {
-            RemoveCatWithCollapse(slotToCat[slot]);
+            for (int i = cats.Count - 1; i >= 0; i--)
+            {
+                RemoveCatWithCollapse(cats[i]);
+            }
         }
 
-        //cats.Clear();
-        slotToCat.Clear();
+        if (spawnMode == CatSpawnMode.SlotDriven)
+        {
+            foreach (var slot in slotToCat.Keys)
+            {
+                RemoveCatWithCollapse(slotToCat[slot]);
+            }
+        }
+
+        if (spawnMode == CatSpawnMode.PersonDriven)
+        {
+            cats.Clear();
+        }
+
+        if (spawnMode == CatSpawnMode.SlotDriven)
+        {
+            slotToCat.Clear();
+        }
+        slotRemoving.Clear();
         personLastSlot.Clear();
         skeletonPercentCounters.Clear();
         ResetAvailableCats();
         slotHeadStates.Clear();
     }
+    private void RemoveSlotCatWithCollapse(int slot, CatMotionController cat)
+    {
+        // 已在移除中就不要重複觸發
+        if (slotRemoving.Contains(slot))
+            return;
+
+        slotRemoving.Add(slot);
+        StartCoroutine(DestroySlotCatAfterDelay(slot, cat, 1f));
+    }
+
+    private IEnumerator DestroySlotCatAfterDelay(int slot, CatMotionController cat, float delay)
+    {
+        // 這段基本沿用你原本 DestroyCatAfterDelay 的流程
+        yield return new WaitUntil(() => cat == null || cat.isReached100);
+
+        if (cat == null)
+        {
+            // 貓已經不存在，收尾清理
+            slotToCat.Remove(slot);
+            slotHeadStates.Remove(slot);
+            slotRemoving.Remove(slot);
+            yield break;
+        }
+
+        yield return new WaitUntil(() => !cat.isForceUpdateHeadPosition);
+
+        cat.BeginSmoothCollapse();
+        yield return new WaitForSeconds(delay);
+
+        if (cat != null)
+        {
+            RecycleCatVideo(cat);
+            Destroy(cat.gameObject);
+        }
+
+        // 最重要：Destroy 之後才釋放 slot
+        slotToCat.Remove(slot);
+        slotHeadStates.Remove(slot);
+        slotRemoving.Remove(slot);
+    }
+
     private void RecycleCatVideo(CatMotionController cat)
     {
         if (catToVideoIndex.TryGetValue(cat, out int index))
@@ -313,13 +398,15 @@ public class CatManager : MonoBehaviour
             }
             else if (spawnMode == CatSpawnMode.SlotDriven)
             {
-                // SlotDriven 清場（重點）
-                foreach (var cat in slotToCat.Values)
+                // SlotDriven：斷訊/沒人時，不要 Clear slotToCat
+                // 只觸發「延遲移除」，等 Destroy 完才釋放 slot
+                var slots = new List<int>(slotToCat.Keys);
+                for (int i = 0; i < slots.Count; i++)
                 {
-                    RemoveCatWithCollapse(cat);
+                    int slot = slots[i];
+                    RemoveSlotCatWithCollapse(slot, slotToCat[slot]);
                 }
 
-                slotToCat.Clear();
             }
 
             return;
@@ -353,19 +440,50 @@ public class CatManager : MonoBehaviour
             float internalAngle = angleShift - ext;
             if (internalAngle < 0f) internalAngle += 360f;
 
-            // 量化到 slot
-            int best = snapAngles[0];
-            float bestDist = Mathf.Abs(internalAngle - snapAngles[0]);
+            //// 量化到 slot
+            //int best = snapAngles[0];
+            //float bestDist = Mathf.Abs(internalAngle - snapAngles[0]);
 
-            for (int s = 1; s < snapAngles.Length; s++)
+            //for (int s = 1; s < snapAngles.Length; s++)
+            //{
+            //    float d = Mathf.Abs(internalAngle - snapAngles[s]);
+            //    if (d < bestDist)
+            //    {
+            //        bestDist = d;
+            //        best = snapAngles[s];
+            //    }
+            //}
+
+            // 量化到 slot（加上有效範圍限制）
+            int best = -1;
+            float bestDist = float.MaxValue;
+
+            for (int s = 0; s < snapAngles.Length; s++)
             {
-                float d = Mathf.Abs(internalAngle - snapAngles[s]);
-                if (d < bestDist)
+                int slotAngle = snapAngles[s];
+                if (slotAngle == 360)
+                    slotAngle = 0;
+
+                float dist = Mathf.Abs(Mathf.DeltaAngle(internalAngle, slotAngle));
+
+                // ★ 超出 slotRange，直接略過
+                if (dist > slotAngleRange)
+                    continue;
+
+                if (dist < bestDist)
                 {
-                    bestDist = d;
-                    best = snapAngles[s];
+                    bestDist = dist;
+                    best = slotAngle;
                 }
             }
+
+            // ★ 如果沒有任何 slot 在範圍內，這個人直接略過
+            if (best < 0)
+            {
+                // 這個人不佔任何 slot，也不產生貓
+                continue;
+            }
+
 
             if (best == 360)
                 best = 0;
@@ -500,21 +618,29 @@ public class CatManager : MonoBehaviour
 
             // 移除「已經沒人」的 slot（先縮頭再刪）
             var removeSlots = new List<int>();
+
+            //foreach (var kv in slotToCat)
+            //{
+            //    if (!activeSlotSet.Contains(kv.Key))
+            //    {
+            //        RemoveCatWithCollapse(kv.Value);
+            //        removeSlots.Add(kv.Key);
+            //    }
+            //}
+
+            //for (int i = 0; i < removeSlots.Count; i++)
+            //{
+            //    int slot = removeSlots[i];
+            //    slotToCat.Remove(slot);
+            //    slotHeadStates.Remove(slot); // 關鍵：同步清掉狀態
+            //}
+
             foreach (var kv in slotToCat)
             {
                 if (!activeSlotSet.Contains(kv.Key))
                 {
-                    RemoveCatWithCollapse(kv.Value);
-                    cats.Remove(kv.Value); // 關鍵：同步移除
-                    removeSlots.Add(kv.Key);
+                    RemoveSlotCatWithCollapse(kv.Key, kv.Value);
                 }
-            }
-
-            for (int i = 0; i < removeSlots.Count; i++)
-            {
-                int slot = removeSlots[i];
-                slotToCat.Remove(slot);
-                slotHeadStates.Remove(slot); // 關鍵：同步清掉狀態
             }
 
             // 為「新出現的 slot」生成貓
@@ -578,10 +704,17 @@ public class CatManager : MonoBehaviour
 
                 // 判斷是否觸發（只看是否為非 0）
                 float inputPercent = skeletonPercent[allowedPerson];
+                //Debug.Log($"inputPercent:{inputPercent}, cat.IsPoppedUpTriggered:{cat.IsPoppedUpTriggered}");
+                if(inputPercent > 0 && !cat.IsPoppedUpTriggered && !cat.IsPoppedUpTriggered)
+                {
+                    cat.IsPoppedUpTriggered = true;
+                    StartCoroutine(CatPoppingUp(cat));
+
+                }
                 if (!stateData.triggered && inputPercent > 0f)
                 {
                     stateData.triggered = true;
-                    stateData.state = SlotHeadState.RisingTo50;
+                    stateData.state = SlotHeadState.HoldAt50;
                     stateData.timer = 0f;
                 }
 
@@ -589,7 +722,6 @@ public class CatManager : MonoBehaviour
                 // - 只要 slot 已被 trigger
                 // - 頭就固定顯示在 50
                 float displayPercent = 0f;
-                stateData.timer += Time.deltaTime;
 
                 switch (stateData.state)
                 {
@@ -597,39 +729,14 @@ public class CatManager : MonoBehaviour
                         displayPercent = 0f;
                         break;
 
-                    case SlotHeadState.RisingTo50:
-                        {
-                            float t = Mathf.Clamp01(stateData.timer / riseTo50Duration);
-                            displayPercent = Mathf.Lerp(0f, 50f, t);
-
-                            if (t >= 1f)
-                            {
-                                stateData.state = SlotHeadState.HoldAt50;
-                                stateData.timer = 0f;
-                            }
-                        }
-                        break;
-
                     case SlotHeadState.HoldAt50:
                         displayPercent = 50f;
+                        stateData.timer += Time.deltaTime;
 
                         if (stateData.timer >= holdAt50Duration)
                         {
-                            stateData.state = SlotHeadState.RisingTo100;
+                            stateData.state = SlotHeadState.HoldAt100;
                             stateData.timer = 0f;
-                        }
-                        break;
-
-                    case SlotHeadState.RisingTo100:
-                        {
-                            float t = Mathf.Clamp01(stateData.timer / riseTo100Duration);
-                            displayPercent = Mathf.Lerp(50f, 100f, t);
-
-                            if (t >= 1f)
-                            {
-                                stateData.state = SlotHeadState.HoldAt100;
-                                stateData.timer = 0f;
-                            }
                         }
                         break;
 
@@ -639,8 +746,24 @@ public class CatManager : MonoBehaviour
                 }
 
                 cat.UpdateAngle(slot);
-                cat.UpdateHeadPosition(displayPercent);
+                //cat.UpdateHeadPosition(displayPercent);
             }
+        }
+    }
+    private IEnumerator CatPoppingUp(CatMotionController cat)
+    {
+        Debug.Log($"CatPoppingUp執行");
+        if (cat.IsPoppedUpTriggered)
+        {
+            cat.isForceUpdateHeadPosition = true;
+            cat.forceUpdateHeadPosition(50);
+            yield return new WaitForSeconds(holdAt50Duration);
+            cat.forceUpdateHeadPosition(100);
+
+            //yield return new WaitForSeconds(waitFor100Duration);
+            yield return new WaitUntil(() => cat.isReached100);
+            cat.isForceUpdateHeadPosition = false;
+            Debug.Log($"isReached100:{cat.isReached100},\n isForceUpdateHeadPosition:{cat.isForceUpdateHeadPosition}");
         }
     }
     private int GetClosestPersonToSlot(
@@ -741,5 +864,4 @@ public class CatManager : MonoBehaviour
         public float timer = 0f;
         public bool triggered = false; // 是否已被非 0 skeletonPercent 觸發
     }
-
 }

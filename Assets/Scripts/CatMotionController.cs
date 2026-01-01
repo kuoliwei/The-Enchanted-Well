@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CatMotionController : MonoBehaviour
@@ -17,9 +18,14 @@ public class CatMotionController : MonoBehaviour
     private float targetY;
     private float currentY;
 
-    private bool hasReceivedFirstData = false;
-    public bool IsCollapsed { get; private set; }
+    private float targetPercent;
 
+    private bool hasReceivedFirstData = false;
+    [HideInInspector] public bool IsCollapsed { get; private set; }
+    [HideInInspector] public bool IsPoppedUpTriggered = false;
+    [HideInInspector] public bool isForceUpdateHeadPosition = false;
+    [HideInInspector] public bool isReached100 = false;
+    [HideInInspector] public bool isReached0 = false;
 
     //[Header("Angle Snap Settings")]
     //[SerializeField]
@@ -49,6 +55,28 @@ public class CatMotionController : MonoBehaviour
 
     void Update()
     {
+        if (isForceUpdateHeadPosition)
+        {
+            UpdateHeadPosition(targetPercent);
+
+            if (Mathf.Abs(yAt100 - currentY) < 0.0001f)
+            {
+                isReached100 = true;
+            }
+
+            Debug.Log($"isReached100:{isReached100},\n isForceUpdateHeadPosition:{isForceUpdateHeadPosition},\n currentY = {currentY},\n targetY = {targetY},\n currentY - targetY = {currentY - targetY},\n targetY - yAt100 < 0.0001f:{targetY - yAt100 < 0.0001f},\n targetY - currentY < 0.0001f:{targetY - currentY < 0.0001f}");
+        }
+
+        if (!isForceUpdateHeadPosition && IsCollapsed)
+        {
+            if (Mathf.Abs(yAt0 - currentY) < 0.0001f)
+            {
+                isReached0 = true;
+            }
+            Debug.Log($"isReached100:{isReached0},\n IsCollapsed:{IsCollapsed},\n isForceUpdateHeadPosition:{isForceUpdateHeadPosition}");
+        }
+
+
         // 每幀平滑靠近目標
         currentY = Mathf.Lerp(currentY, targetY, Time.deltaTime * smoothSpeed);
 
@@ -137,5 +165,10 @@ public class CatMotionController : MonoBehaviour
         hasReceivedFirstData = true;
         targetY = yAt0;
         IsCollapsed = true;
+    }
+    public void forceUpdateHeadPosition(float percent)
+    {
+        Debug.Log($"forceUpdateHeadPosition執行, percent = {percent}");
+        targetPercent = percent;
     }
 }
