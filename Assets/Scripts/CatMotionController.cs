@@ -51,6 +51,8 @@ public class CatMotionController : MonoBehaviour
         Vector3 p = catVideo.localPosition;
         p.y = currentY;
         catVideo.localPosition = p;
+        isReached0 = true;
+        isReached100 = false;
     }
 
     void Update()
@@ -59,9 +61,16 @@ public class CatMotionController : MonoBehaviour
         {
             UpdateHeadPosition(targetPercent);
 
-            if (Mathf.Abs(yAt100 - currentY) < 0.0001f)
+            if (Mathf.Abs(yAt100 - currentY) < 0.1f)
             {
+                currentY = yAt100;
+                Vector3 p100 = catVideo.localPosition;
+                p100.y = currentY;
                 isReached100 = true;
+            }
+            else
+            {
+                isReached100 = false;
             }
 
             Debug.Log($"isReached100:{isReached100},\n isForceUpdateHeadPosition:{isForceUpdateHeadPosition},\n currentY = {currentY},\n targetY = {targetY},\n currentY - targetY = {currentY - targetY},\n targetY - yAt100 < 0.0001f:{targetY - yAt100 < 0.0001f},\n targetY - currentY < 0.0001f:{targetY - currentY < 0.0001f}");
@@ -69,20 +78,29 @@ public class CatMotionController : MonoBehaviour
 
         if (!isForceUpdateHeadPosition && IsCollapsed)
         {
-            if (Mathf.Abs(yAt0 - currentY) < 0.0001f)
+            if (Mathf.Abs(yAt0 - currentY) < 0.1f)
+            {
+                currentY = yAt0;
+                Vector3 p0 = catVideo.localPosition;
+                p0.y = currentY;
+                isReached0 = true;
+            }
+            else
             {
                 isReached0 = true;
             }
             Debug.Log($"isReached100:{isReached0},\n IsCollapsed:{IsCollapsed},\n isForceUpdateHeadPosition:{isForceUpdateHeadPosition}");
         }
 
+        if(!Mathf.Approximately(targetY, currentY))
+        {
+            // 每幀平滑靠近目標
+            currentY = Mathf.Lerp(currentY, targetY, Time.deltaTime * smoothSpeed);
 
-        // 每幀平滑靠近目標
-        currentY = Mathf.Lerp(currentY, targetY, Time.deltaTime * smoothSpeed);
-
-        Vector3 p = catVideo.localPosition;
-        p.y = currentY;
-        catVideo.localPosition = p;
+            Vector3 p = catVideo.localPosition;
+            p.y = currentY;
+            catVideo.localPosition = p;
+        }
     }
 
     // ------------------------------------------------------

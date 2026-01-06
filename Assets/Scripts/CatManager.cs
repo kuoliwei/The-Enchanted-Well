@@ -87,6 +87,12 @@ public class CatManager : MonoBehaviour
     // ======== ★ 記錄每個人的上一個 slot ========
     private Dictionary<int, int> personLastSlot = new Dictionary<int, int>();
 
+    // Slot → 最後一次被「任何人」佔用的時間
+    private Dictionary<int, float> slotLastSeenTime = new Dictionary<int, float>();
+
+    // slot → 是否鎖定（true = 不准移除）
+    private Dictionary<int, bool> slotRemovalLock = new Dictionary<int, bool>();
+
     // ======== ★ skeletonPercent 變更門檻設定 ========
     [Header("Skeleton Percent Switch Threshold")]
     [SerializeField]
@@ -116,28 +122,13 @@ public class CatManager : MonoBehaviour
             poseReceiver.OnSkeletonFrame += OnSkeletonFrame;
         else
             Debug.LogError("[CatManager] poseReceiver 未設定");
+
+        Debug.Log($"[Init] slotRemoving count = {slotRemoving.Count}");
+
     }
 
     private void Update()
     {
-        durationOfInterruption += Time.deltaTime;
-        // 資料中斷偵測
-        if (durationOfInterruption > timeoutSeconds)
-        {
-            Debug.Log($"durationOfInterruption:{durationOfInterruption}");
-            if (spawnMode == CatSpawnMode.PersonDriven && cats.Count > 0)
-            {
-                SmoothRemoveAllCats();
-                Debug.Log("[CatManager] 資料中斷，立即清空所有貓");
-            }
-            if (spawnMode == CatSpawnMode.SlotDriven && slotToCat.Count > 0)
-            {
-                SmoothRemoveAllCats();
-                Debug.Log("[CatManager] 資料中斷，立即清空所有貓");
-            }
-            durationOfInterruption = 0;
-        }
-
         //// 資料中斷偵測
         //if (Time.time - lastFrameTime > timeoutSeconds)
         //{
@@ -148,6 +139,91 @@ public class CatManager : MonoBehaviour
         //    }
         //    SmoothRemoveAllCats();
         //}
+
+        foreach (var kv in slotLastSeenTime)
+        {
+            int slot = kv.Key;
+            float lastSeen = kv.Value;
+            float missingTime = Time.time - lastSeen;
+
+            if (missingTime > timeoutSeconds)
+            {
+                Debug.Log(
+    $"[SlotDebug-State] slot {slot} | " +
+    $"hasCat={slotToCat.ContainsKey(slot)} | " +
+    $"isRemoving={slotRemoving.Contains(slot)} | " +
+    $"isLocked={(slotRemovalLock.ContainsKey(slot) ? slotRemovalLock[slot] : "N/A")}"
+);
+
+                // timeout → 解鎖（允許刪）
+                if (!slotRemovalLock.ContainsKey(slot) || slotRemovalLock[slot] != false)
+                {
+                    slotRemovalLock[slot] = false;
+                    Debug.Log($"[SlotLock] slot {slot} UNLOCK (missing {missingTime:F2}s)");
+                }
+
+                Debug.Log(
+                    $"[SlotTimeout] slot {slot} NO PERSON for {missingTime:F2}s (>{timeoutSeconds}s)"
+                );
+
+                // 關鍵：刪除期間鎖
+                if (slotRemoving.Contains(slot))
+                {
+                    Debug.Log(
+                        $"[SlotRemoveSkip] slot {slot} already removing, skip"
+                    );
+                }
+                else
+                {
+                    if (slotToCat.TryGetValue(slot, out var cat))
+                    {
+                        Debug.Log($"[SlotRemove] slot {slot} START remove cat, cat.isReached0:{cat.isReached0}");
+                        // 分流：未曾冒頭 → 立即刪除
+                        if (cat.isReached0 && !cat.IsPoppedUpTriggered)
+                        {
+                            RemoveSlotCatImmediate(slot, cat);
+                        }
+                        else
+                        {
+                            RemoveSlotCatWithCollapse(slot, cat);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // 尚未超過 timeout → 上鎖（禁止被清掉）
+                if (!slotRemovalLock.ContainsKey(slot) || slotRemovalLock[slot] != true)
+                {
+                    slotRemovalLock[slot] = true;
+                    Debug.Log(
+                        $"[SlotLock] slot {slot} LOCK (missing {missingTime:F2}s)"
+                    );
+                }
+
+                Debug.Log(
+                    $"[SlotActive] slot {slot} last seen {missingTime:F2}s ago"
+                );
+            }
+
+        }
+        durationOfInterruption += Time.deltaTime;
+        // 資料中斷偵測
+        if (durationOfInterruption > timeoutSeconds)
+        {
+            Debug.Log($"durationOfInterruption:{durationOfInterruption}");
+            if (spawnMode == CatSpawnMode.PersonDriven && cats.Count > 0)
+            {
+                SmoothRemoveAllCats();
+                Debug.Log("[CatManager] 資料中斷，立即清空所有貓");
+            }
+            //if (spawnMode == CatSpawnMode.SlotDriven && slotToCat.Count > 0)
+            //{
+            //    SmoothRemoveAllCats();
+            //    Debug.Log("[CatManager] 資料中斷，立即清空所有貓");
+            //}
+            durationOfInterruption = 0;
+        }
     }
     private void ResetAvailableCats()
     {
@@ -206,6 +282,8 @@ public class CatManager : MonoBehaviour
         skeletonPercentCounters.Clear(); // 同步清空百分比狀態
         ResetAvailableCats(); // 重置可抽貓池
         slotHeadStates.Clear();
+        Debug.Log($"[ClearAllCatsImmediate] slotRemoving cleared, count={slotRemoving.Count}");
+
     }
 
     private void EnsureCatCount(int count)
@@ -318,6 +396,7 @@ public class CatManager : MonoBehaviour
             // 貓已經不存在，收尾清理
             slotToCat.Remove(slot);
             slotHeadStates.Remove(slot);
+            Debug.Log($"[SlotRemovingRemove] slot {slot} (cat already null)");
             slotRemoving.Remove(slot);
             yield break;
         }
@@ -336,8 +415,49 @@ public class CatManager : MonoBehaviour
         // 最重要：Destroy 之後才釋放 slot
         slotToCat.Remove(slot);
         slotHeadStates.Remove(slot);
+        Debug.Log($"[SlotRemovingRemove] slot {slot} (after collapse)");
         slotRemoving.Remove(slot);
+
     }
+    private void RemoveSlotCatImmediate(int slot, CatMotionController cat)
+    {
+        Debug.Log($"[SlotRemoveImmediate] slot {slot} remove cat immediately");
+
+        // 與現行流程一致：避免重複刪除
+        if (slotRemoving.Contains(slot))
+            return;
+
+        if (slotRemoving.Contains(slot))
+        {
+            Debug.Log($"[SlotRemovingAdd-SKIP] slot {slot} already in removing (Immediate)");
+            return;
+        }
+
+        Debug.Log($"[SlotRemovingAdd] slot {slot} by RemoveSlotCatImmediate");
+
+        slotRemoving.Add(slot);
+
+        if (cat != null)
+        {
+            // 與 coroutine 流程一致：回收影片 index
+            RecycleCatVideo(cat);
+
+            // 立即刪除
+            Destroy(cat.gameObject);
+            Debug.Log($"[SlotRemovingRemove] slot {slot} by RemoveSlotCatImmediate");
+            slotRemoving.Remove(slot);
+        }
+
+        // 與 DestroySlotCatAfterDelay 結尾完全一致
+        slotToCat.Remove(slot);
+        slotHeadStates.Remove(slot);
+        //if (slotRemoving.Contains(slot))
+        //{
+        //    Debug.Log($"[SlotRemovingAdd-SKIP] slot {slot} already in removing (Immediate)");
+        //    return;
+        //}
+    }
+
 
     private void RecycleCatVideo(CatMotionController cat)
     {
@@ -375,10 +495,15 @@ public class CatManager : MonoBehaviour
 
     private void OnSkeletonFrame(SkeletonFrame frame)
     {
-        if (frame != null)
-        {
-            HandleSkeletonData(frame.angles, frame.skeletonPercent);
-        }
+        //if (frame != null)
+        //{
+        //    HandleSkeletonData(frame.angles, frame.skeletonPercent);
+        //}
+
+        if (frame == null) return;
+
+        //lastFrameTime = Time.time;          // 全域斷訊只看「有沒有收到 frame」
+        HandleSkeletonData(frame.angles, frame.skeletonPercent);
     }
 
     public void HandleSkeletonData(
@@ -396,18 +521,17 @@ public class CatManager : MonoBehaviour
             {
                 SmoothRemoveAllCats();
             }
-            else if (spawnMode == CatSpawnMode.SlotDriven)
-            {
-                // SlotDriven：斷訊/沒人時，不要 Clear slotToCat
-                // 只觸發「延遲移除」，等 Destroy 完才釋放 slot
-                var slots = new List<int>(slotToCat.Keys);
-                for (int i = 0; i < slots.Count; i++)
-                {
-                    int slot = slots[i];
-                    RemoveSlotCatWithCollapse(slot, slotToCat[slot]);
-                }
-
-            }
+            //else if (spawnMode == CatSpawnMode.SlotDriven)
+            //{
+            //    // SlotDriven：斷訊/沒人時，不要 Clear slotToCat
+            //    // 只觸發「延遲移除」，等 Destroy 完才釋放 slot
+            //    var slots = new List<int>(slotToCat.Keys);
+            //    for (int i = 0; i < slots.Count; i++)
+            //    {
+            //        int slot = slots[i];
+            //        RemoveSlotCatWithCollapse(slot, slotToCat[slot]);
+            //    }
+            //}
 
             return;
         }
@@ -616,6 +740,15 @@ public class CatManager : MonoBehaviour
             // 目前有人的 slot
             var activeSlotSet = new HashSet<int>(slotToPersons.Keys);
 
+            float now = Time.time;
+
+            // 更新：所有本幀有人的 slot
+            foreach (int slot in activeSlotSet)
+            {
+                slotLastSeenTime[slot] = now;
+            }
+
+
             // 移除「已經沒人」的 slot（先縮頭再刪）
             var removeSlots = new List<int>();
 
@@ -635,13 +768,13 @@ public class CatManager : MonoBehaviour
             //    slotHeadStates.Remove(slot); // 關鍵：同步清掉狀態
             //}
 
-            foreach (var kv in slotToCat)
-            {
-                if (!activeSlotSet.Contains(kv.Key))
-                {
-                    RemoveSlotCatWithCollapse(kv.Key, kv.Value);
-                }
-            }
+            //foreach (var kv in slotToCat)
+            //{
+            //    if (!activeSlotSet.Contains(kv.Key))
+            //    {
+            //        RemoveSlotCatWithCollapse(kv.Key, kv.Value);
+            //    }
+            //}
 
             // 為「新出現的 slot」生成貓
             foreach (int slot in activeSlotSet)
@@ -660,7 +793,12 @@ public class CatManager : MonoBehaviour
                 int slot = kv.Key;
                 var cat = kv.Value;
 
-                var personsInSlot = slotToPersons[slot];
+                if (!slotToPersons.TryGetValue(slot, out var personsInSlot))
+                {
+                    // 本幀這個 slot 沒有人（正常狀態）
+                    // 直接跳過更新，不是錯誤
+                    continue;
+                }
 
                 // 取該 slot 中順位最前面的人
                 //int allowedPerson = personsInSlot[0];
@@ -747,7 +885,9 @@ public class CatManager : MonoBehaviour
 
                 cat.UpdateAngle(slot);
                 //cat.UpdateHeadPosition(displayPercent);
+
             }
+
         }
     }
     private IEnumerator CatPoppingUp(CatMotionController cat)

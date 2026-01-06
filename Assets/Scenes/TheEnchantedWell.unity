@@ -360,10 +360,10 @@ MonoBehaviour:
   - 0
   - 0
   - 0
-  liveUpdate: 0
-  unstableMode: 0
-  dropEveryNFrames: 10
-  dropDurationFrames: 5
+  liveUpdate: 1
+  unstableMode: 1
+  dropEveryNFrames: 2
+  dropDurationFrames: 10
 --- !u!1 &426630846
 GameObject:
   m_ObjectHideFlags: 0
@@ -1477,7 +1477,7 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1311283436}
   m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: 81bb029e0d7e01245abf3eb634c85f77, type: 3}
+  m_VideoClip: {fileID: 32900000, guid: a303ee7b4505cc34196a3c93c7b9bb2b, type: 3}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 0}
@@ -1680,7 +1680,10 @@ MonoBehaviour:
   - clips:
     - {fileID: 32900000, guid: d2675d553d0a0a048a96906e22d9dd1e, type: 3}
     - {fileID: 32900000, guid: 51192da874eb8974aa87d5d692732e10, type: 3}
-  timeoutSeconds: 3
+  - clips:
+    - {fileID: 32900000, guid: 4ebd5d6480469fd4fb769a852b4aac02, type: 3}
+    - {fileID: 32900000, guid: 0e12a9d03fb92704baf7aaa97e5296ed, type: 3}
+  timeoutSeconds: 1
   holdAt50Duration: 4
   waitFor100Duration: 1
   snapAngles: 3c0000006900000096000000c3000000
@@ -2892,8 +2895,8 @@ Transform:
   m_GameObject: {fileID: 2104274658}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.14, y: 0.753, z: -10}
-  m_LocalScale: {x: 1.4500453, y: 1.4591864, z: 1}
+  m_LocalPosition: {x: 0.141, y: 0.794, z: -10}
+  m_LocalScale: {x: 1.4241508, y: 1.4213123, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
