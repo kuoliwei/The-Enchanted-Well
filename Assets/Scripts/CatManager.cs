@@ -2,6 +2,7 @@ using PoseSocket;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Video;
 
 [System.Serializable]
@@ -64,10 +65,9 @@ public class CatManager : MonoBehaviour
         = new Dictionary<int, SlotHeadStateData>();
 
     [Header("Slot Head Timing")]
-    //[SerializeField] private float riseTo50Duration;
+    [SerializeField] private InputField holdAt50DurationInput;
     [SerializeField] private float holdAt50Duration;
     [SerializeField] private float waitFor100Duration;
-    //[SerializeField] private float riseTo100Duration;
 
     [Header("Angle Snap Settings")]
     [SerializeField]
@@ -77,7 +77,10 @@ public class CatManager : MonoBehaviour
     [SerializeField]
     private float slotAngleRange = 20f; // ±多少度內才算進 slot
 
+    [Header("Angle Shift")]
+    [SerializeField] private InputField angleShiftInput;
     [SerializeField] private int angleShift;
+    private int internalShift => -angleShift;
 
     // ======== ★ 角度切換 threshold 設定 ========
     [Header("Angle Switch Threshold")]
@@ -114,6 +117,11 @@ public class CatManager : MonoBehaviour
     private Dictionary<int, SkeletonPercentCounter> skeletonPercentCounters
         = new Dictionary<int, SkeletonPercentCounter>();
 
+    private void Awake()
+    {
+        //angleShiftInput.onValueChanged.AddListener(SetAngleShiftFromString);
+        //holdAt50DurationInput.onValueChanged.AddListener(SetHoldAt50DurationFromString);
+    }
     private void Start()
     {
         catToVideoIndex.Clear();
@@ -124,7 +132,6 @@ public class CatManager : MonoBehaviour
             Debug.LogError("[CatManager] poseReceiver 未設定");
 
         Debug.Log($"[Init] slotRemoving count = {slotRemoving.Count}");
-
     }
 
     private void Update()
@@ -561,7 +568,7 @@ public class CatManager : MonoBehaviour
 
             // 座標轉換（原樣保留）
             float ext = Mathf.Repeat(rawAngle, 360f);
-            float internalAngle = angleShift - ext;
+            float internalAngle = internalShift - ext;
             if (internalAngle < 0f) internalAngle += 360f;
 
             //// 量化到 slot
@@ -588,7 +595,11 @@ public class CatManager : MonoBehaviour
                 if (slotAngle == 360)
                     slotAngle = 0;
 
-                float dist = Mathf.Abs(Mathf.DeltaAngle(internalAngle, slotAngle));
+                // ★ 關鍵：slot 角度也要進 internalAngle 空間
+                float slotInternal = internalShift - slotAngle;
+                if (slotInternal < 0f) slotInternal += 360f;
+
+                float dist = Mathf.Abs(Mathf.DeltaAngle(internalAngle, slotInternal));
 
                 // ★ 超出 slotRange，直接略過
                 if (dist > slotAngleRange)
@@ -617,7 +628,10 @@ public class CatManager : MonoBehaviour
 
             if (personLastSlot.TryGetValue(i, out int lastSlot))
             {
-                float distFromLast = Mathf.Abs(internalAngle - lastSlot);
+                float lastSlotInternal = internalShift - lastSlot;
+                if (lastSlotInternal < 0f) lastSlotInternal += 360f;
+
+                float distFromLast = Mathf.Abs(Mathf.DeltaAngle(internalAngle, lastSlotInternal));
 
                 if (distFromLast < angleSwitchThreshold)
                 {
@@ -732,7 +746,8 @@ public class CatManager : MonoBehaviour
 
                 //cats[personIndex].UpdateHeadPosition(stablePercent);
                 cats[personIndex].UpdateHeadPosition(finalPercent);
-                cats[personIndex].UpdateAngle(slot);
+                float worldAngle = SlotToWorldAngle(slot);
+                cats[personIndex].UpdateAngle(worldAngle);
             }
         }
         else if (spawnMode == CatSpawnMode.SlotDriven)
@@ -883,7 +898,8 @@ public class CatManager : MonoBehaviour
                         break;
                 }
 
-                cat.UpdateAngle(slot);
+                float worldAngle = SlotToWorldAngle(slot);
+                cat.UpdateAngle(worldAngle);
                 //cat.UpdateHeadPosition(displayPercent);
 
             }
@@ -921,10 +937,14 @@ public class CatManager : MonoBehaviour
 
             float rawAngle = angles[candidatePerson];
             float ext = Mathf.Repeat(rawAngle, 360f);
-            float internalAngle = angleShift - ext;
+            float internalAngle = internalShift - ext;
             if (internalAngle < 0f) internalAngle += 360f;
 
-            float dist = Mathf.Abs(Mathf.DeltaAngle(internalAngle, slot));
+            float slotInternal = internalShift - slot;
+            if (slotInternal < 0f) slotInternal += 360f;
+
+            float dist = Mathf.Abs(Mathf.DeltaAngle(internalAngle, slotInternal));
+
 
             if (dist < bestDist)
             {
@@ -1004,4 +1024,53 @@ public class CatManager : MonoBehaviour
         public float timer = 0f;
         public bool triggered = false; // 是否已被非 0 skeletonPercent 觸發
     }
+    public void SetAngleShiftFromString(string value)
+    {
+        if (int.TryParse(value, out int parsed))
+        {
+            angleShift = parsed;
+        }
+        Debug.Log($"angleShift:{angleShift}");
+    }
+    public void ApplyAngleShiftFromInput()
+    {
+        if (angleShiftInput == null)
+            return;
+
+        if (int.TryParse(angleShiftInput.text, out int parsed))
+        {
+            angleShift = parsed;
+            Debug.Log($"angleShift updated: {angleShift}");
+        }
+    }
+    public void SetHoldAt50DurationFromString(string value)
+    {
+        if (float.TryParse(value, out float parsed))
+        {
+            holdAt50Duration = parsed;
+            Debug.Log($"secondsToRevealFullBody updated: {holdAt50Duration}");
+        }
+    }
+    public void ApplyHoldAt50DurationFromInput()
+    {
+        if (holdAt50DurationInput == null)
+            return;
+
+        if (float.TryParse(holdAt50DurationInput.text, out float parsed))
+        {
+            holdAt50Duration = parsed;
+            Debug.Log($"secondsToRevealFullBody updated: {holdAt50Duration}");
+        }
+    }
+    private float SlotToWorldAngle(int slot)
+    {
+        // slot 是 internalAngle 空間
+        float world = internalShift - slot;
+
+        if (world < 0f)
+            world += 360f;
+
+        return world;
+    }
+
 }

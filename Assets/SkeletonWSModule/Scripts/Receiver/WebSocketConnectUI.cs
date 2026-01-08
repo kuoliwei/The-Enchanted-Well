@@ -24,8 +24,8 @@ public class WebSocketConnectUI : MonoBehaviour
         //ipInput.text = "127.0.0.1";
         //portInput.text = "9999";
 
-        ipInput.text = "127.0.0.1";
-        portInput.text = "8765";
+        //ipInput.text = "127.0.0.1";
+        //portInput.text = "8765";
 
         connectButton.onClick.AddListener(OnClickConnect);
 

@@ -1,0 +1,21 @@
+{
+  "wellCalibration": {
+    "rotationOffsetDegrees": 45.0,
+    "positionOffset": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "scale": 1.0
+  },
+  "webSocketConnection": {
+    "ip": "127.0.0.1",
+    "port": 9999
+  },
+  "catAppearance": {
+    "secondsToRevealFullBody": 10.0
+  },
+  "screenSettings": {
+    "widthRatio": 1920,
+    "heightRatio": 1080
+  }
+}
