@@ -9,10 +9,10 @@
   },
   "webSocketConnection": {
     "ip": "127.0.0.1",
-    "port": 9999
+    "port": 8765
   },
   "catAppearance": {
-    "secondsToRevealFullBody": 10.0
+    "secondsToRevealFullBody": 3.0
   },
   "screenSettings": {
     "widthRatio": 1920,

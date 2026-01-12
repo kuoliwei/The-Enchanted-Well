@@ -32,7 +32,13 @@ public class WebSocketConnectUI : MonoBehaviour
         receiver.OnConnected += NotifyConnectionSucceeded;
         receiver.OnConnectionFailed += NotifyConnectionFailed;
     }
-
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            connectPanel.SetActive(!connectPanel.activeSelf);
+        }
+    }
     private void OnClickConnect()
     {
         message.text = "";
@@ -51,7 +57,8 @@ public class WebSocketConnectUI : MonoBehaviour
             SetResult(false, "Port 格式不正確（有效範圍 1~65535）");
             return;
         }
-
+        // 不論狀態，直接中斷
+        receiver.Close();
         // 呼叫 Receiver 做連線（UI 不處理連線細節）
         receiver.Connect(ip, portString);
     }

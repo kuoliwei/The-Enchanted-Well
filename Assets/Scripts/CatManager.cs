@@ -1,4 +1,5 @@
 using PoseSocket;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -116,6 +117,10 @@ public class CatManager : MonoBehaviour
     // personIndex → SkeletonPercentCounter
     private Dictionary<int, SkeletonPercentCounter> skeletonPercentCounters
         = new Dictionary<int, SkeletonPercentCounter>();
+
+    [Header("Experience Counter")]
+    [SerializeField]
+    private ExperienceCounterBootstrapper experienceCounter;
 
     private void Awake()
     {
@@ -248,7 +253,7 @@ public class CatManager : MonoBehaviour
             return -1;
         }
 
-        int r = Random.Range(0, availableCatIndices.Count);
+        int r = UnityEngine.Random.Range(0, availableCatIndices.Count);
         int catIndex = availableCatIndices[r];
 
         // 抽走就移除，確保不重複
@@ -874,16 +879,16 @@ public class CatManager : MonoBehaviour
                 // STEP 2 暫時行為：
                 // - 只要 slot 已被 trigger
                 // - 頭就固定顯示在 50
-                float displayPercent = 0f;
+                //float displayPercent = 0f;
 
                 switch (stateData.state)
                 {
                     case SlotHeadState.Idle:
-                        displayPercent = 0f;
+                        //displayPercent = 0f;
                         break;
 
                     case SlotHeadState.HoldAt50:
-                        displayPercent = 50f;
+                        //displayPercent = 50f;
                         stateData.timer += Time.deltaTime;
 
                         if (stateData.timer >= holdAt50Duration)
@@ -894,7 +899,7 @@ public class CatManager : MonoBehaviour
                         break;
 
                     case SlotHeadState.HoldAt100:
-                        displayPercent = 100f;
+                        //displayPercent = 100f;
                         break;
                 }
 
@@ -920,6 +925,19 @@ public class CatManager : MonoBehaviour
             yield return new WaitUntil(() => cat.isReached100);
             cat.isForceUpdateHeadPosition = false;
             Debug.Log($"isReached100:{cat.isReached100},\n isForceUpdateHeadPosition:{cat.isForceUpdateHeadPosition}");
+            // ===== 體驗完成 → 人次 +1 =====
+            if (experienceCounter != null)
+            {
+                var data = experienceCounter.LoadCounter();
+                if (data != null)
+                {
+                    data.totalCount++;
+                    data.lastUpdated = DateTimeOffset.Now.ToString("yyyy-MM-ddTHH:mm:sszzz");
+                    experienceCounter.SaveCounter(data);
+
+                    Debug.Log($"[ExperienceCounter] totalCount = {data.totalCount}");
+                }
+            }
         }
     }
     private int GetClosestPersonToSlot(

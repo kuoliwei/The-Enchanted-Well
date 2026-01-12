@@ -12,9 +12,6 @@ public class WellOutputImageController : MonoBehaviour
     [Header("Target")]
     [SerializeField] private RawImage rawImage;
 
-    [Header("Design Base Size (1:1)")]
-    [SerializeField] private float baseSize = 1000f;
-
     [Header("Aspect Scale Input")]
     [SerializeField] private InputField scaleInput;
 
@@ -85,8 +82,8 @@ public class WellOutputImageController : MonoBehaviour
             return;
         }
 
-        float parentWidth = parentRt.rect.width;
-        float parentHeight = parentRt.rect.height;
+        //float parentWidth = parentRt.rect.width;
+        //float parentHeight = parentRt.rect.height;
 
         // 防呆：還沒輸入解析度就不算
         if (currentWidthRatio <= 0 || currentHeightRatio <= 0)
@@ -95,32 +92,35 @@ public class WellOutputImageController : MonoBehaviour
             return;
         }
 
-        float squareSize;
+        //float squareSize;
 
-        // ★ 完全依照「使用者輸入的第二銀幕解析度」判斷方向
-        if (currentWidthRatio >= currentHeightRatio)
-        {
-            // 橫式銀幕（例如 1920x1080）→ 井貼高度
-            squareSize = parentHeight;
-        }
-        else
-        {
-            // 直式銀幕（例如 1080x1920）→ 井貼寬度
-            squareSize = parentWidth;
-        }
+        //// 完全依照「使用者輸入的第二銀幕解析度」判斷方向
+        //if (currentWidthRatio >= currentHeightRatio)
+        //{
+        //    // 橫式銀幕（例如 1920x1080）→ 井貼高度
+        //    squareSize = currentHeightRatio;
+        //}
+        //else
+        //{
+        //    // 直式銀幕（例如 1080x1920）→ 井貼寬度
+        //    squareSize = currentWidthRatio;
+        //}
+
+        float squareSize = Mathf.Min(currentWidthRatio, currentHeightRatio);
 
         // 置中（不影響尺寸邏輯）
         rt.anchorMin = new Vector2(0.5f, 0.5f);
         rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.pivot = new Vector2(0.5f, 0.5f);
 
-        // ★ 用 sizeDelta 定義井的實際尺寸（1:1）
+        // 用 sizeDelta 定義井的實際尺寸（1:1）
         rt.sizeDelta = new Vector2(squareSize, squareSize);
 
-        Debug.Log(
-            $"[WellOutput] ApplyAspect ratio({currentWidthRatio}x{currentHeightRatio}), " +
-            $"parent({parentWidth}x{parentHeight}) → square {squareSize}"
-        );
+        Debug.Log($"[WellOutput] ApplyAspect ratio({currentWidthRatio}x{currentHeightRatio})");
+        //Debug.Log(
+        //    $"[WellOutput] ApplyAspect ratio({currentWidthRatio}x{currentHeightRatio}), " +
+        //    $"parent({parentWidth}x{parentHeight}) → square {squareSize}"
+        //);
     }
 
     #endregion

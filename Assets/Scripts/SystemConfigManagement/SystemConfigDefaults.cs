@@ -6,7 +6,7 @@ public static class SystemConfigDefaults
         {
             wellCalibration = new WellCalibrationConfig
             {
-                rotationOffsetDegrees = 0f,
+                rotationOffsetDegrees = 45f,
                 positionOffset = new PositionOffset
                 {
                     x = 0f,
@@ -28,8 +28,8 @@ public static class SystemConfigDefaults
 
             screenSettings = new ScreenSettingsConfig
             {
-                widthRatio = 16,
-                heightRatio = 9
+                widthRatio = 1920,
+                heightRatio = 1080
             }
         };
     }
