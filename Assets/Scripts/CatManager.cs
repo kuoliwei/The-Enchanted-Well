@@ -29,7 +29,7 @@ public class CatManager : MonoBehaviour
 
     [Header("Cat Spawn Mode")]
     [SerializeField]
-    private CatSpawnMode spawnMode = CatSpawnMode.PersonDriven;
+    private CatSpawnMode spawnMode = CatSpawnMode.SlotDriven;
 
     [Header("Data Source")]
     [SerializeField] private PoseDataReceiver poseReceiver;
@@ -44,7 +44,11 @@ public class CatManager : MonoBehaviour
     [SerializeField] private List<CatVideoSet> catVideoSets;
 
     [Header("資料中斷判定秒數")]
-    [SerializeField] private float timeoutSeconds;
+    [SerializeField] private float timeoutSeconds = 1;
+
+    [Header("Slot Presence Settings")]
+    [SerializeField]
+    private float slotConfirmSeconds = 0.5f; // 某個 slot 連續存在多久才允許冒頭
 
     private readonly List<CatMotionController> cats = new List<CatMotionController>();
     //private float lastFrameTime = 0f;
@@ -67,12 +71,12 @@ public class CatManager : MonoBehaviour
 
     [Header("Slot Head Timing")]
     [SerializeField] private InputField holdAt50DurationInput;
-    [SerializeField] private float holdAt50Duration;
-    [SerializeField] private float waitFor100Duration;
+    [SerializeField] private float holdAt50Duration = 3;
+    [SerializeField] private float waitFor100Duration = 1;
 
     [Header("Angle Snap Settings")]
     [SerializeField]
-    private int[] snapAngles = { 0, 60, 120, 180, 240, 300, 360 };
+    private int[] snapAngles = { 115, 160, 205, 250 };
 
     [Header("Slot Range Settings")]
     [SerializeField]
@@ -80,19 +84,22 @@ public class CatManager : MonoBehaviour
 
     [Header("Angle Shift")]
     [SerializeField] private InputField angleShiftInput;
-    [SerializeField] private int angleShift;
+    [SerializeField] private int angleShift = 45;
     private int internalShift => -angleShift;
 
     // ======== ★ 角度切換 threshold 設定 ========
     [Header("Angle Switch Threshold")]
     [SerializeField]
-    private float angleSwitchThreshold = 20f;
+    private float angleSwitchThreshold = 10f;
 
     // ======== ★ 記錄每個人的上一個 slot ========
     private Dictionary<int, int> personLastSlot = new Dictionary<int, int>();
 
     // Slot → 最後一次被「任何人」佔用的時間
     private Dictionary<int, float> slotLastSeenTime = new Dictionary<int, float>();
+
+    // Slot → 連續存在時間（在 Update 中用 Time.deltaTime 累積）
+    private Dictionary<int, float> slotPresenceDuration = new Dictionary<int, float>();
 
     // slot → 是否鎖定（true = 不准移除）
     private Dictionary<int, bool> slotRemovalLock = new Dictionary<int, bool>();
@@ -160,6 +167,10 @@ public class CatManager : MonoBehaviour
 
             if (missingTime > timeoutSeconds)
             {
+                // 一旦超過 timeout，表示這個 slot 已經「不算持續有人」，
+                // 所以把連續存在時間歸零，等之後再重新累積
+                slotPresenceDuration[slot] = 0f;
+
                 Debug.Log(
     $"[SlotDebug-State] slot {slot} | " +
     $"hasCat={slotToCat.ContainsKey(slot)} | " +
@@ -204,6 +215,13 @@ public class CatManager : MonoBehaviour
             }
             else
             {
+                // 尚未超過 timeout → 視為這個 slot 仍然「持續有人」
+                // 在這裡用 Time.deltaTime 累積「連續存在時間」
+                float duration = 0f;
+                slotPresenceDuration.TryGetValue(slot, out duration);
+                duration += Time.deltaTime;
+                slotPresenceDuration[slot] = duration;
+
                 // 尚未超過 timeout → 上鎖（禁止被清掉）
                 if (!slotRemovalLock.ContainsKey(slot) || slotRemovalLock[slot] != true)
                 {
@@ -214,10 +232,9 @@ public class CatManager : MonoBehaviour
                 }
 
                 Debug.Log(
-                    $"[SlotActive] slot {slot} last seen {missingTime:F2}s ago"
+                    $"[SlotActive] slot {slot} last seen {missingTime:F2}s ago, presence={duration:F2}s"
                 );
             }
-
         }
         durationOfInterruption += Time.deltaTime;
         // 資料中斷偵測
@@ -292,6 +309,7 @@ public class CatManager : MonoBehaviour
         slotRemoving.Clear();
         personLastSlot.Clear(); // 避免舊角度殘留
         skeletonPercentCounters.Clear(); // 同步清空百分比狀態
+        slotPresenceDuration.Clear();
         ResetAvailableCats(); // 重置可抽貓池
         slotHeadStates.Clear();
         Debug.Log($"[ClearAllCatsImmediate] slotRemoving cleared, count={slotRemoving.Count}");
@@ -385,6 +403,7 @@ public class CatManager : MonoBehaviour
         slotRemoving.Clear();
         personLastSlot.Clear();
         skeletonPercentCounters.Clear();
+        slotPresenceDuration.Clear();
         ResetAvailableCats();
         slotHeadStates.Clear();
     }
@@ -860,15 +879,31 @@ public class CatManager : MonoBehaviour
                     slotHeadStates[slot] = stateData;
                 }
 
-                // 判斷是否觸發（只看是否為非 0）
+                //// 判斷是否觸發（只看是否為非 0）
+                //float inputPercent = skeletonPercent[allowedPerson];
+                ////Debug.Log($"inputPercent:{inputPercent}, cat.IsPoppedUpTriggered:{cat.IsPoppedUpTriggered}");
+                //if(inputPercent > 0 && !cat.IsPoppedUpTriggered && !cat.IsPoppedUpTriggered)
+                //{
+                //    cat.IsPoppedUpTriggered = true;
+                //    StartCoroutine(CatPoppingUp(cat));
+
+                //}
+
                 float inputPercent = skeletonPercent[allowedPerson];
-                //Debug.Log($"inputPercent:{inputPercent}, cat.IsPoppedUpTriggered:{cat.IsPoppedUpTriggered}");
-                if(inputPercent > 0 && !cat.IsPoppedUpTriggered && !cat.IsPoppedUpTriggered)
+
+                // 讀取這個 slot 已經連續存在多久（在 Update 裡累積的）
+                float presenceDuration = 0f;
+                slotPresenceDuration.TryGetValue(slot, out presenceDuration);
+
+                // 只有「連續存在時間達標」才允許冒頭
+                if (presenceDuration >= slotConfirmSeconds &&
+                    inputPercent > 0f &&
+                    !cat.IsPoppedUpTriggered)
                 {
                     cat.IsPoppedUpTriggered = true;
                     StartCoroutine(CatPoppingUp(cat));
-
                 }
+
                 if (!stateData.triggered && inputPercent > 0f)
                 {
                     stateData.triggered = true;

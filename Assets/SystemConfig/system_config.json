@@ -9,7 +9,7 @@
   },
   "webSocketConnection": {
     "ip": "127.0.0.1",
-    "port": 8765
+    "port": 9999
   },
   "catAppearance": {
     "secondsToRevealFullBody": 3.0

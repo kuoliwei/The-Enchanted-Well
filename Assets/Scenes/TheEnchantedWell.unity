@@ -921,9 +921,9 @@ RectTransform:
   - {fileID: 2003308066}
   - {fileID: 1289727988}
   - {fileID: 153447472}
+  - {fileID: 1620127194}
   - {fileID: 1140670016}
   - {fileID: 92053718}
-  - {fileID: 1620127194}
   - {fileID: 439086786}
   - {fileID: 1514301356}
   - {fileID: 1778338396}
@@ -3348,7 +3348,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u5782\u76F4\u4F4D\u7F6E\u88DC\u511F(\u4E0A\u6B63\u4E0B\u8CA0\uFF0C\u55AE\u4F4D\u70BA\u89E3\u6790\u5EA6)"
+  m_Text: "Y\u8EF8\u4F4D\u7F6E(\u4E0A\u6B63\u4E0B\u8CA0\uFF0C\u55AE\u4F4D\u70BA\u89E3\u6790\u5EA6)"
 --- !u!222 &1289727990
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4054,7 +4054,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1535897775}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 658d0b0a9506d0c4ebfc7bc1bea637d5, type: 3}
+  m_Script: {fileID: 11500000, guid: f8deac7fb2e54d941b921e657e91921f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   spawnMode: 1
@@ -4063,21 +4063,22 @@ MonoBehaviour:
   catParent: {fileID: 1643130631}
   catVideoSets:
   - clips:
-    - {fileID: 32900000, guid: eba3628e33b94b54c9f25475bea07cb6, type: 3}
-    - {fileID: 32900000, guid: e55b521d8e8fb7b4dac429d3a1b976b4, type: 3}
-  - clips:
-    - {fileID: 32900000, guid: 620b1d15b228ac34ea08966a11d39d82, type: 3}
-    - {fileID: 32900000, guid: d0037c6629f9cf44791a21d798547e9f, type: 3}
+    - {fileID: 32900000, guid: d2675d553d0a0a048a96906e22d9dd1e, type: 3}
+    - {fileID: 32900000, guid: 51192da874eb8974aa87d5d692732e10, type: 3}
   - clips:
     - {fileID: 32900000, guid: 87daa7b244356e74794291b8e6841a19, type: 3}
     - {fileID: 32900000, guid: 67bf989886cefa94cb43eeeeca27b5d5, type: 3}
   - clips:
-    - {fileID: 32900000, guid: d2675d553d0a0a048a96906e22d9dd1e, type: 3}
-    - {fileID: 32900000, guid: 51192da874eb8974aa87d5d692732e10, type: 3}
+    - {fileID: 32900000, guid: 620b1d15b228ac34ea08966a11d39d82, type: 3}
+    - {fileID: 32900000, guid: d0037c6629f9cf44791a21d798547e9f, type: 3}
+  - clips:
+    - {fileID: 32900000, guid: eba3628e33b94b54c9f25475bea07cb6, type: 3}
+    - {fileID: 32900000, guid: 11ee55203780728408468036f5b62f70, type: 3}
   - clips:
     - {fileID: 32900000, guid: 4ebd5d6480469fd4fb769a852b4aac02, type: 3}
     - {fileID: 32900000, guid: 0e12a9d03fb92704baf7aaa97e5296ed, type: 3}
   timeoutSeconds: 1
+  slotConfirmSeconds: 3
   holdAt50DurationInput: {fileID: 621384289}
   holdAt50Duration: 3
   waitFor100Duration: 1
@@ -4085,8 +4086,8 @@ MonoBehaviour:
   slotAngleRange: 20
   angleShiftInput: {fileID: 1551957009}
   angleShift: 45
-  angleSwitchThreshold: 15
-  skeletonPercentThresholdCount: 10
+  angleSwitchThreshold: 10
+  skeletonPercentThresholdCount: 30
   experienceCounter: {fileID: 280281022}
 --- !u!1 &1551957007
 GameObject:
@@ -5431,7 +5432,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u65CB\u8F49\u89D2\u5EA6\u88DC\u511F(\u4F9D\u651D\u5F71\u6A5F\u4F4D\u7F6E)"
+  m_Text: "\u651D\u5F71\u6A5F\u4F4D\u7F6E(\u89D2\u5EA6)"
 --- !u!222 &1806624955
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6038,7 +6039,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u6C34\u5E73\u4F4D\u7F6E\u88DC\u511F(\u53F3\u6B63\u5DE6\u8CA0\uFF0C\u55AE\u4F4D\u70BA\u89E3\u6790\u5EA6)"
+  m_Text: "X\u8EF8\u4F4D\u7F6E(\u53F3\u6B63\u5DE6\u8CA0\uFF0C\u55AE\u4F4D\u70BA\u89E3\u6790\u5EA6)"
 --- !u!222 &2003308068
 CanvasRenderer:
   m_ObjectHideFlags: 0
