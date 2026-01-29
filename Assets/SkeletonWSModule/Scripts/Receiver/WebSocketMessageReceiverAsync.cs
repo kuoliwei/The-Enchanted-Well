@@ -31,21 +31,21 @@ public class WebSocketMessageReceiverAsync : MonoBehaviour
             // ★ 新增連線成功事件
             webSocketClient.OnConnected.AddListener(() =>
             {
-                Debug.Log("[WS] Connected");
+                //Debug.Log("[WS] Connected");
                 OnConnected?.Invoke();
             });
 
             // ★ 新增連線失敗事件
             webSocketClient.OnConnectionError.AddListener(() =>
             {
-                Debug.LogError("[WS] Connection Error");
+                //Debug.LogError("[WS] Connection Error");
                 OnConnectionFailed?.Invoke("連線失敗");
             });
 
             // ★ 新增斷線事件
             webSocketClient.OnDisconnected.AddListener(() =>
             {
-                Debug.LogWarning("[WS] Disconnected");
+                //Debug.LogWarning("[WS] Disconnected");
                 OnDisconnected?.Invoke();
             });
         }

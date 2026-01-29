@@ -44,7 +44,9 @@ public class CatManager : MonoBehaviour
     [SerializeField] private List<CatVideoSet> catVideoSets;
 
     [Header("資料中斷判定秒數")]
-    [SerializeField] private float timeoutSeconds = 1;
+    [SerializeField] private float dataInterruptToCollapseSeconds = 1;
+
+    [SerializeField] private float dataInterruptDestroyDelaySeconds = 5f;
 
     [Header("Slot Presence Settings")]
     [SerializeField]
@@ -103,6 +105,10 @@ public class CatManager : MonoBehaviour
 
     // slot → 是否鎖定（true = 不准移除）
     private Dictionary<int, bool> slotRemovalLock = new Dictionary<int, bool>();
+
+    // slot → destroy coroutine
+    private Dictionary<int, Coroutine> slotDestroyCoroutines
+        = new Dictionary<int, Coroutine>();
 
     // ======== ★ skeletonPercent 變更門檻設定 ========
     [Header("Skeleton Percent Switch Threshold")]
@@ -165,7 +171,7 @@ public class CatManager : MonoBehaviour
             float lastSeen = kv.Value;
             float missingTime = Time.time - lastSeen;
 
-            if (missingTime > timeoutSeconds)
+            if (missingTime > dataInterruptToCollapseSeconds)
             {
                 // 一旦超過 timeout，表示這個 slot 已經「不算持續有人」，
                 // 所以把連續存在時間歸零，等之後再重新累積
@@ -186,7 +192,7 @@ public class CatManager : MonoBehaviour
                 }
 
                 Debug.Log(
-                    $"[SlotTimeout] slot {slot} NO PERSON for {missingTime:F2}s (>{timeoutSeconds}s)"
+                    $"[SlotTimeout] slot {slot} NO PERSON for {missingTime:F2}s (>{dataInterruptToCollapseSeconds}s)"
                 );
 
                 // 關鍵：刪除期間鎖
@@ -238,7 +244,7 @@ public class CatManager : MonoBehaviour
         }
         durationOfInterruption += Time.deltaTime;
         // 資料中斷偵測
-        if (durationOfInterruption > timeoutSeconds)
+        if (durationOfInterruption > dataInterruptToCollapseSeconds)
         {
             Debug.Log($"durationOfInterruption:{durationOfInterruption}");
             if (spawnMode == CatSpawnMode.PersonDriven && cats.Count > 0)
@@ -363,6 +369,7 @@ public class CatManager : MonoBehaviour
         Debug.Log($"isReached100:{cat.isReached100},\n isForceUpdateHeadPosition:{cat.isForceUpdateHeadPosition}");
 
         cat.BeginSmoothCollapse();
+        cat.hasPoppedAndCollapsed = true;
         yield return new WaitForSeconds(delay);
 
         if (cat != null)
@@ -414,11 +421,13 @@ public class CatManager : MonoBehaviour
             return;
 
         slotRemoving.Add(slot);
-        StartCoroutine(DestroySlotCatAfterDelay(slot, cat, 1f));
+        var co = StartCoroutine(DestroySlotCatAfterDelay(slot, cat, dataInterruptDestroyDelaySeconds));
+        slotDestroyCoroutines[slot] = co;
     }
 
     private IEnumerator DestroySlotCatAfterDelay(int slot, CatMotionController cat, float delay)
     {
+
         // 這段基本沿用你原本 DestroyCatAfterDelay 的流程
         yield return new WaitUntil(() => cat == null || cat.isReached100);
 
@@ -435,6 +444,10 @@ public class CatManager : MonoBehaviour
         yield return new WaitUntil(() => !cat.isForceUpdateHeadPosition);
 
         cat.BeginSmoothCollapse();
+        cat.hasPoppedAndCollapsed = true;
+
+        yield return new WaitUntil(() => cat == null || cat.isReached0);
+
         yield return new WaitForSeconds(delay);
 
         if (cat != null)
@@ -823,6 +836,31 @@ public class CatManager : MonoBehaviour
                     var newCat = Instantiate(catPrefab, catParent);
                     AssignRandomCatVideoSet(newCat);
                     slotToCat.Add(slot, newCat);
+                }
+                else
+                {
+                    var cat = slotToCat[slot];
+
+                    // 若此貓曾經冒出頭，且因人離開而縮頭，
+                    // 當人回到該 slot 時，取消刪除並重設為等待冒頭狀態
+                    if (cat.hasPoppedAndCollapsed)
+                    {
+                        Debug.Log($"[SlotCatReset] slot {slot} reset collapsed cat");
+
+                        // 若已有啟動刪除協程，先取消
+                        if (slotDestroyCoroutines.TryGetValue(slot, out var co))
+                        {
+                            StopCoroutine(co);
+                            slotDestroyCoroutines.Remove(slot);
+                        }
+
+                        // 移除該 slot 的移除中狀態
+                        slotRemoving.Remove(slot);
+
+                        // 重設冒頭相關旗標，讓後續 slotConfirmSeconds 可再次觸發
+                        cat.IsPoppedUpTriggered = false;
+                        cat.hasPoppedAndCollapsed = false;
+                    }
                 }
             }
 

@@ -19,6 +19,8 @@ public class WebSocketConnectUI : MonoBehaviour
     /// </summary>
     public event Action<bool, string> OnConnectResult;
 
+    bool disconnectionMessageLock = false;
+
     private void Start()
     {
         //ipInput.text = "127.0.0.1";
@@ -31,6 +33,7 @@ public class WebSocketConnectUI : MonoBehaviour
 
         receiver.OnConnected += NotifyConnectionSucceeded;
         receiver.OnConnectionFailed += NotifyConnectionFailed;
+        receiver.OnDisconnected += NotifyDisconnected;
     }
     private void Update()
     {
@@ -39,8 +42,14 @@ public class WebSocketConnectUI : MonoBehaviour
             connectPanel.SetActive(!connectPanel.activeSelf);
         }
     }
+    public void ConnectFromExternal()
+    {
+        OnClickConnect();
+    }
+
     private void OnClickConnect()
     {
+        disconnectionMessageLock = true;
         message.text = "";
 
         string ip = ipInput.text.Trim();
@@ -68,8 +77,15 @@ public class WebSocketConnectUI : MonoBehaviour
     /// </summary>
     public void NotifyConnectionSucceeded()
     {
-        SetResult(true, "連線成功");
-        connectPanel.SetActive(false);
+        if (connectPanel.activeSelf)
+        {
+            SetResult(true, "連線成功");
+            Debug.Log("[WebSocketConnectUI] 連線成功");
+        }
+        else
+            Debug.Log("[WebSocketConnectUI] 連線成功");
+        disconnectionMessageLock = false;
+        //connectPanel.SetActive(false);
     }
 
     /// <summary>
@@ -78,10 +94,37 @@ public class WebSocketConnectUI : MonoBehaviour
     public void NotifyConnectionFailed(string reason = "連線失敗")
     {
         if (connectPanel.activeSelf)
+        {
             SetResult(false, reason);
+            Debug.Log("[WebSocketConnectUI] 連線失敗");
+        }
         else
-            Debug.LogWarning(reason);
+            Debug.Log("[WebSocketConnectUI] 連線失敗");
     }
+    /// <summary>
+    /// 供 Receiver 在斷線時呼叫
+    /// </summary>
+    public void NotifyDisconnected()
+    {
+        if (!disconnectionMessageLock)
+        {
+            // 若 UI 面板有開，顯示給使用者
+            if (connectPanel.activeSelf)
+            {
+                SetResult(false, "連線中斷");
+                Debug.Log("[WebSocketConnectUI] 連線中斷");
+            }
+            else
+            {
+                Debug.Log("[WebSocketConnectUI] 連線中斷");
+            }
+        }
+        else
+        {
+            disconnectionMessageLock = false;
+        }
+    }
+
 
     private void SetResult(bool isSuccess, string msg)
     {

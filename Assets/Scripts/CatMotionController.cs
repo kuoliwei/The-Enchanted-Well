@@ -24,6 +24,7 @@ public class CatMotionController : MonoBehaviour
     [HideInInspector] public bool IsCollapsed { get; private set; }
     [HideInInspector] public bool IsPoppedUpTriggered = false;
     [HideInInspector] public bool isForceUpdateHeadPosition = false;
+    [HideInInspector] public bool hasPoppedAndCollapsed = false;
     [HideInInspector] public bool isReached100 = false;
     [HideInInspector] public bool isReached0 = false;
 
@@ -87,7 +88,7 @@ public class CatMotionController : MonoBehaviour
             }
             else
             {
-                isReached0 = true;
+                isReached0 = false;
             }
             Debug.Log($"isReached100:{isReached0},\n IsCollapsed:{IsCollapsed},\n isForceUpdateHeadPosition:{isForceUpdateHeadPosition}");
         }
@@ -115,7 +116,6 @@ public class CatMotionController : MonoBehaviour
         e.z = angle;
         catRoot.localEulerAngles = e;
     }
-
 
     // ------------------------------------------------------
     // 更新貓的頭部位置（僅改成設定 targetY + 平滑插值）
@@ -180,12 +180,22 @@ public class CatMotionController : MonoBehaviour
     // ★ 用於人離場：只設定 target，不硬切
     public void BeginSmoothCollapse()
     {
+        Debug.Log(
+    $"[BeginSmoothCollapse] {name} | " +
+    $"IsPoppedUpTriggered={IsPoppedUpTriggered}, " +
+    $"IsCollapsed(before)={IsCollapsed}"
+);
+
         hasReceivedFirstData = true;
         targetY = yAt0;
         IsCollapsed = true;
     }
     public void forceUpdateHeadPosition(float percent)
     {
+        Debug.Log(
+    $"[UpdateHeadPosition] {name} | percent={percent}, " +
+    $"IsCollapsed={IsCollapsed}, IsPoppedUpTriggered={IsPoppedUpTriggered}"
+);
         Debug.Log($"forceUpdateHeadPosition執行, percent = {percent}");
         targetPercent = percent;
     }

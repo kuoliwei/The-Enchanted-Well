@@ -1,6 +1,7 @@
 using System.Globalization;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 
 public class SystemConfigUIController : MonoBehaviour
 {
@@ -26,6 +27,10 @@ public class SystemConfigUIController : MonoBehaviour
     [SerializeField] private InputField heightRatioInput;
 
     private static readonly CultureInfo Invariant = CultureInfo.InvariantCulture;
+
+    [Header("Events")]
+    [SerializeField]
+    private UnityEvent onConfigApplied;
 
     private void Start()
     {
@@ -88,6 +93,7 @@ public class SystemConfigUIController : MonoBehaviour
             Set(widthRatioInput, config.screenSettings.widthRatio);
             Set(heightRatioInput, config.screenSettings.heightRatio);
         }
+        onConfigApplied?.Invoke();
     }
 
     // =========================
