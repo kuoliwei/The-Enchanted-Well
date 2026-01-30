@@ -177,12 +177,12 @@ public class CatManager : MonoBehaviour
                 // 所以把連續存在時間歸零，等之後再重新累積
                 slotPresenceDuration[slot] = 0f;
 
-                Debug.Log(
-    $"[SlotDebug-State] slot {slot} | " +
-    $"hasCat={slotToCat.ContainsKey(slot)} | " +
-    $"isRemoving={slotRemoving.Contains(slot)} | " +
-    $"isLocked={(slotRemovalLock.ContainsKey(slot) ? slotRemovalLock[slot] : "N/A")}"
-);
+//                Debug.Log(
+//    $"[SlotDebug-State] slot {slot} | " +
+//    $"hasCat={slotToCat.ContainsKey(slot)} | " +
+//    $"isRemoving={slotRemoving.Contains(slot)} | " +
+//    $"isLocked={(slotRemovalLock.ContainsKey(slot) ? slotRemovalLock[slot] : "N/A")}"
+//);
 
                 // timeout → 解鎖（允許刪）
                 if (!slotRemovalLock.ContainsKey(slot) || slotRemovalLock[slot] != false)
@@ -191,9 +191,9 @@ public class CatManager : MonoBehaviour
                     Debug.Log($"[SlotLock] slot {slot} UNLOCK (missing {missingTime:F2}s)");
                 }
 
-                Debug.Log(
-                    $"[SlotTimeout] slot {slot} NO PERSON for {missingTime:F2}s (>{dataInterruptToCollapseSeconds}s)"
-                );
+                //Debug.Log(
+                //    $"[SlotTimeout] slot {slot} NO PERSON for {missingTime:F2}s (>{dataInterruptToCollapseSeconds}s)"
+                //);
 
                 // 關鍵：刪除期間鎖
                 if (slotRemoving.Contains(slot))
@@ -232,21 +232,16 @@ public class CatManager : MonoBehaviour
                 if (!slotRemovalLock.ContainsKey(slot) || slotRemovalLock[slot] != true)
                 {
                     slotRemovalLock[slot] = true;
-                    Debug.Log(
-                        $"[SlotLock] slot {slot} LOCK (missing {missingTime:F2}s)"
-                    );
+                    Debug.Log($"[SlotLock] slot {slot} LOCK (missing {missingTime:F2}s)");
                 }
-
-                Debug.Log(
-                    $"[SlotActive] slot {slot} last seen {missingTime:F2}s ago, presence={duration:F2}s"
-                );
+                //Debug.Log($"[SlotActive] slot {slot} last seen {missingTime:F2}s ago, presence={duration:F2}s");
             }
         }
         durationOfInterruption += Time.deltaTime;
         // 資料中斷偵測
         if (durationOfInterruption > dataInterruptToCollapseSeconds)
         {
-            Debug.Log($"durationOfInterruption:{durationOfInterruption}");
+            //Debug.Log($"durationOfInterruption:{durationOfInterruption}");
             if (spawnMode == CatSpawnMode.PersonDriven && cats.Count > 0)
             {
                 SmoothRemoveAllCats();

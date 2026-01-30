@@ -74,7 +74,7 @@ public class CatMotionController : MonoBehaviour
                 isReached100 = false;
             }
 
-            Debug.Log($"isReached100:{isReached100},\n isForceUpdateHeadPosition:{isForceUpdateHeadPosition},\n currentY = {currentY},\n targetY = {targetY},\n currentY - targetY = {currentY - targetY},\n targetY - yAt100 < 0.0001f:{targetY - yAt100 < 0.0001f},\n targetY - currentY < 0.0001f:{targetY - currentY < 0.0001f}");
+            //Debug.Log($"isReached100:{isReached100},\n isForceUpdateHeadPosition:{isForceUpdateHeadPosition},\n currentY = {currentY},\n targetY = {targetY},\n currentY - targetY = {currentY - targetY},\n targetY - yAt100 < 0.0001f:{targetY - yAt100 < 0.0001f},\n targetY - currentY < 0.0001f:{targetY - currentY < 0.0001f}");
         }
 
         if (!isForceUpdateHeadPosition && IsCollapsed)
