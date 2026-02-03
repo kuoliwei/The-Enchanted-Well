@@ -2475,13 +2475,10 @@ MonoBehaviour:
       m_Calls: []
   m_OnDidEndEdit:
     m_PersistentCalls:
-      m_Calls: []
-  m_OnValueChanged:
-    m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 443372283}
-        m_TargetAssemblyTypeName: WellOutputImageController, Assembly-CSharp
-        m_MethodName: ApplyScaleFromInput
+      - m_Target: {fileID: 1542865742}
+        m_TargetAssemblyTypeName: ValueModifier, Assembly-CSharp
+        m_MethodName: ClampCurrentValue
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2491,9 +2488,12 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1542865742}
-        m_TargetAssemblyTypeName: ValueModifier, Assembly-CSharp
-        m_MethodName: ClampCurrentValue
+  m_OnValueChanged:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 443372283}
+        m_TargetAssemblyTypeName: WellOutputImageController, Assembly-CSharp
+        m_MethodName: ApplyScaleFromInput
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2645,13 +2645,10 @@ MonoBehaviour:
       m_Calls: []
   m_OnDidEndEdit:
     m_PersistentCalls:
-      m_Calls: []
-  m_OnValueChanged:
-    m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1535897777}
-        m_TargetAssemblyTypeName: CatManager, Assembly-CSharp
-        m_MethodName: ApplyHoldAt50DurationFromInput
+      - m_Target: {fileID: 971973729}
+        m_TargetAssemblyTypeName: ValueModifier, Assembly-CSharp
+        m_MethodName: ClampCurrentValue
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2661,9 +2658,12 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 971973729}
-        m_TargetAssemblyTypeName: ValueModifier, Assembly-CSharp
-        m_MethodName: ClampCurrentValue
+  m_OnValueChanged:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1535897777}
+        m_TargetAssemblyTypeName: CatManager, Assembly-CSharp
+        m_MethodName: ApplyHoldAt50DurationFromInput
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5061,13 +5061,10 @@ MonoBehaviour:
       m_Calls: []
   m_OnDidEndEdit:
     m_PersistentCalls:
-      m_Calls: []
-  m_OnValueChanged:
-    m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 443372283}
-        m_TargetAssemblyTypeName: WellOutputImageController, Assembly-CSharp
-        m_MethodName: ApplyOffsetXFromInput
+      - m_Target: {fileID: 2078106312}
+        m_TargetAssemblyTypeName: ValueModifier, Assembly-CSharp
+        m_MethodName: ClampCurrentValue
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5077,9 +5074,12 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 2078106312}
-        m_TargetAssemblyTypeName: ValueModifier, Assembly-CSharp
-        m_MethodName: ClampCurrentValue
+  m_OnValueChanged:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 443372283}
+        m_TargetAssemblyTypeName: WellOutputImageController, Assembly-CSharp
+        m_MethodName: ApplyOffsetXFromInput
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -6964,13 +6964,10 @@ MonoBehaviour:
       m_Calls: []
   m_OnDidEndEdit:
     m_PersistentCalls:
-      m_Calls: []
-  m_OnValueChanged:
-    m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1535897777}
-        m_TargetAssemblyTypeName: CatManager, Assembly-CSharp
-        m_MethodName: ApplyAngleShiftFromInput
+      - m_Target: {fileID: 1980550854}
+        m_TargetAssemblyTypeName: ValueModifier, Assembly-CSharp
+        m_MethodName: ClampCurrentValue
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -6980,9 +6977,12 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1980550854}
-        m_TargetAssemblyTypeName: ValueModifier, Assembly-CSharp
-        m_MethodName: ClampCurrentValue
+  m_OnValueChanged:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1535897777}
+        m_TargetAssemblyTypeName: CatManager, Assembly-CSharp
+        m_MethodName: ApplyAngleShiftFromInput
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -9371,13 +9371,10 @@ MonoBehaviour:
       m_Calls: []
   m_OnDidEndEdit:
     m_PersistentCalls:
-      m_Calls: []
-  m_OnValueChanged:
-    m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 443372283}
-        m_TargetAssemblyTypeName: WellOutputImageController, Assembly-CSharp
-        m_MethodName: ApplyOffsetYFromInput
+      - m_Target: {fileID: 318750698}
+        m_TargetAssemblyTypeName: ValueModifier, Assembly-CSharp
+        m_MethodName: ClampCurrentValue
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -9387,9 +9384,12 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 318750698}
-        m_TargetAssemblyTypeName: ValueModifier, Assembly-CSharp
-        m_MethodName: ClampCurrentValue
+  m_OnValueChanged:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 443372283}
+        m_TargetAssemblyTypeName: WellOutputImageController, Assembly-CSharp
+        m_MethodName: ApplyOffsetYFromInput
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
