@@ -42,7 +42,6 @@ public class WebSocketConnectUI : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             connectPanel.SetActive(!connectPanel.activeSelf);
-            if (connectPanel.activeSelf) message.text = connectStatus;
         }
     }
     public void ConnectFromExternal()
@@ -80,13 +79,8 @@ public class WebSocketConnectUI : MonoBehaviour
     /// </summary>
     public void NotifyConnectionSucceeded()
     {
-        if (connectPanel.activeSelf)
-        {
-            SetResult(true, "連線成功");
-            Debug.Log("[WebSocketConnectUI] 連線成功");
-        }
-        else
-            Debug.Log("[WebSocketConnectUI] 連線成功");
+        SetResult(true, "連線成功");
+        Debug.Log("[WebSocketConnectUI] 連線成功");
         disconnectionMessageLock = false;
         //connectPanel.SetActive(false);
     }
@@ -96,13 +90,8 @@ public class WebSocketConnectUI : MonoBehaviour
     /// </summary>
     public void NotifyConnectionFailed(string reason = "連線失敗")
     {
-        if (connectPanel.activeSelf)
-        {
-            SetResult(false, reason);
-            Debug.Log("[WebSocketConnectUI] 連線失敗");
-        }
-        else
-            Debug.Log("[WebSocketConnectUI] 連線失敗");
+        SetResult(false, reason);
+        Debug.Log("[WebSocketConnectUI] 連線失敗");
     }
     /// <summary>
     /// 供 Receiver 在斷線時呼叫
@@ -111,16 +100,8 @@ public class WebSocketConnectUI : MonoBehaviour
     {
         if (!disconnectionMessageLock)
         {
-            // 若 UI 面板有開，顯示給使用者
-            if (connectPanel.activeSelf)
-            {
-                SetResult(false, "連線中斷");
-                Debug.Log("[WebSocketConnectUI] 連線中斷");
-            }
-            else
-            {
-                Debug.Log("[WebSocketConnectUI] 連線中斷");
-            }
+            SetResult(false, "連線中斷");
+            Debug.Log("[WebSocketConnectUI] 連線中斷");
         }
         else
         {
@@ -131,8 +112,10 @@ public class WebSocketConnectUI : MonoBehaviour
 
     private void SetResult(bool isSuccess, string msg)
     {
-        message.text = msg;
         connectStatus = msg;
+        //Debug.Log($"connectStatus:{connectStatus}");
+        message.text = connectStatus;
+        //Debug.Log($"message.text:{message.text}");
         OnConnectResult?.Invoke(isSuccess, msg);
     }
 }
