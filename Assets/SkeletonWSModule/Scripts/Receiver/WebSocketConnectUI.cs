@@ -14,6 +14,8 @@ public class WebSocketConnectUI : MonoBehaviour
     [Header("WebSocket 接收器（負責真正連線）")]
     public WebSocketMessageReceiverAsync receiver;
 
+    [Header("WebSocket 連線狀態")]
+    private string connectStatus;
     /// <summary>
     /// 連線結果事件（true=成功, false=失敗, string=訊息）
     /// </summary>
@@ -40,6 +42,7 @@ public class WebSocketConnectUI : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             connectPanel.SetActive(!connectPanel.activeSelf);
+            if (connectPanel.activeSelf) message.text = connectStatus;
         }
     }
     public void ConnectFromExternal()
@@ -129,6 +132,7 @@ public class WebSocketConnectUI : MonoBehaviour
     private void SetResult(bool isSuccess, string msg)
     {
         message.text = msg;
+        connectStatus = msg;
         OnConnectResult?.Invoke(isSuccess, msg);
     }
 }

@@ -2,7 +2,7 @@
   "wellCalibration": {
     "rotationOffsetDegrees": 45.0,
     "positionOffset": {
-      "x": 0.0,
+      "x": -250.0,
       "y": 0.0
     },
     "scale": 1.0
@@ -12,7 +12,9 @@
     "port": 9999
   },
   "catAppearance": {
-    "secondsToRevealFullBody": 3.0
+    "secondsToRevealFullBody": 3.0,
+    "SecondsPersonLeavesTemporarily": 1.0,
+    "SecondsPersonLeavesPermanently": 5.0
   },
   "screenSettings": {
     "widthRatio": 1920,

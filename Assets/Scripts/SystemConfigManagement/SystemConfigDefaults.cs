@@ -23,7 +23,9 @@ public static class SystemConfigDefaults
 
             catAppearance = new CatAppearanceConfig
             {
-                secondsToRevealFullBody = 3f
+                secondsToRevealFullBody = 3f,
+                SecondsPersonLeavesTemporarily = 1f,
+                SecondsPersonLeavesPermanently = 5f,
             },
 
             screenSettings = new ScreenSettingsConfig

@@ -21,6 +21,8 @@ public class SystemConfigUIController : MonoBehaviour
 
     [Header("Cat Appearance")]
     [SerializeField] private InputField secondsToRevealFullBodyInput;
+    [SerializeField] private InputField dataInterruptToCollapseSecondsInput;
+    [SerializeField] private InputField dataInterruptDestroyDelaySecondsInput;
 
     [Header("Screen Settings")]
     [SerializeField] private InputField widthRatioInput;
@@ -86,6 +88,8 @@ public class SystemConfigUIController : MonoBehaviour
         if (config.catAppearance != null)
         {
             Set(secondsToRevealFullBodyInput, config.catAppearance.secondsToRevealFullBody);
+            Set(dataInterruptToCollapseSecondsInput, config.catAppearance.SecondsPersonLeavesTemporarily);
+            Set(dataInterruptDestroyDelaySecondsInput, config.catAppearance.SecondsPersonLeavesPermanently);
         }
 
         if (config.screenSettings != null)
@@ -133,6 +137,8 @@ public class SystemConfigUIController : MonoBehaviour
 
         config.catAppearance = new CatAppearanceConfig();
         config.catAppearance.secondsToRevealFullBody = GetFloat(secondsToRevealFullBodyInput);
+        config.catAppearance.SecondsPersonLeavesTemporarily = GetFloat(dataInterruptToCollapseSecondsInput);
+        config.catAppearance.SecondsPersonLeavesPermanently = GetFloat(dataInterruptDestroyDelaySecondsInput);
 
         config.screenSettings = new ScreenSettingsConfig();
         config.screenSettings.widthRatio = GetInt(widthRatioInput);

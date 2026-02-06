@@ -44,8 +44,9 @@ public class CatManager : MonoBehaviour
     [SerializeField] private List<CatVideoSet> catVideoSets;
 
     [Header("資料中斷判定秒數")]
+    [SerializeField] private InputField dataInterruptToCollapseSecondsInput;
     [SerializeField] private float dataInterruptToCollapseSeconds = 1;
-
+    [SerializeField] private InputField dataInterruptDestroyDelaySecondsInput;
     [SerializeField] private float dataInterruptDestroyDelaySeconds = 5f;
 
     [Header("Slot Presence Settings")]
@@ -1148,6 +1149,45 @@ public class CatManager : MonoBehaviour
             Debug.Log($"secondsToRevealFullBody updated: {holdAt50Duration}");
         }
     }
+    public void SetDataInterruptToCollapseSeconds(string value)
+    {
+        if (float.TryParse(value, out float parsed))
+        {
+            dataInterruptToCollapseSeconds = parsed;
+            Debug.Log($"SecondsPersonLeavesTemporarily updated: {dataInterruptToCollapseSeconds}");
+        }
+    }
+    public void ApplyDataInterruptToCollapseSeconds()
+    {
+        if (dataInterruptToCollapseSecondsInput == null)
+            return;
+
+        if (float.TryParse(dataInterruptToCollapseSecondsInput.text, out float parsed))
+        {
+            dataInterruptToCollapseSeconds = parsed;
+            Debug.Log($"SecondsPersonLeavesTemporarily updated: {dataInterruptToCollapseSeconds}");
+        }
+    }
+    public void SetDataInterruptDestroyDelaySeconds(string value)
+    {
+        if (float.TryParse(value, out float parsed))
+        {
+            dataInterruptDestroyDelaySeconds = parsed;
+            Debug.Log($"SecondsPersonLeavesPermanently updated: {dataInterruptDestroyDelaySeconds}");
+        }
+    }
+    public void ApplyDataInterruptDestroyDelaySeconds()
+    {
+        if (dataInterruptDestroyDelaySecondsInput == null)
+            return;
+
+        if (float.TryParse(dataInterruptDestroyDelaySecondsInput.text, out float parsed))
+        {
+            dataInterruptDestroyDelaySeconds = parsed;
+            Debug.Log($"SecondsPersonLeavesPermanently updated: {dataInterruptDestroyDelaySeconds}");
+        }
+    }
+
     private float SlotToWorldAngle(int slot)
     {
         // slot 是 internalAngle 空間

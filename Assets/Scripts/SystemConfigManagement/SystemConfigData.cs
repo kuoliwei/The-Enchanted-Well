@@ -45,6 +45,14 @@ public class CatAppearanceConfig
     /// 貓咪探頭出現後，多久顯示完整身體（秒）
     /// </summary>
     public float secondsToRevealFullBody;
+    /// <summary>
+    /// 人離開多久，貓咪會縮頭（秒）
+    /// </summary>
+    public float SecondsPersonLeavesTemporarily;
+    /// <summary>
+    /// 人離開多久，會把貓咪刪除（秒）
+    /// </summary>
+    public float SecondsPersonLeavesPermanently;
 }
 public class ScreenSettingsConfig
 {
