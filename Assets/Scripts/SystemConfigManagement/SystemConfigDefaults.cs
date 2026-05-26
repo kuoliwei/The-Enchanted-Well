@@ -23,6 +23,7 @@ public static class SystemConfigDefaults
 
             catAppearance = new CatAppearanceConfig
             {
+                secondsToConfirmPeopleShowUp = 0.5f,
                 secondsToRevealFullBody = 3f,
                 SecondsPersonLeavesTemporarily = 1f,
                 SecondsPersonLeavesPermanently = 5f,

@@ -20,6 +20,7 @@ public class SystemConfigUIController : MonoBehaviour
     [SerializeField] private InputField webSocketPortInput;
 
     [Header("Cat Appearance")]
+    [SerializeField] private InputField secondsToConfirmPeopleShowUp;
     [SerializeField] private InputField secondsToRevealFullBodyInput;
     [SerializeField] private InputField dataInterruptToCollapseSecondsInput;
     [SerializeField] private InputField dataInterruptDestroyDelaySecondsInput;
@@ -87,6 +88,7 @@ public class SystemConfigUIController : MonoBehaviour
 
         if (config.catAppearance != null)
         {
+            Set(secondsToConfirmPeopleShowUp, config.catAppearance.secondsToConfirmPeopleShowUp);
             Set(secondsToRevealFullBodyInput, config.catAppearance.secondsToRevealFullBody);
             Set(dataInterruptToCollapseSecondsInput, config.catAppearance.SecondsPersonLeavesTemporarily);
             Set(dataInterruptDestroyDelaySecondsInput, config.catAppearance.SecondsPersonLeavesPermanently);
@@ -136,6 +138,7 @@ public class SystemConfigUIController : MonoBehaviour
         config.webSocketConnection.port = GetInt(webSocketPortInput);
 
         config.catAppearance = new CatAppearanceConfig();
+        config.catAppearance.secondsToConfirmPeopleShowUp = GetFloat(secondsToConfirmPeopleShowUp);
         config.catAppearance.secondsToRevealFullBody = GetFloat(secondsToRevealFullBodyInput);
         config.catAppearance.SecondsPersonLeavesTemporarily = GetFloat(dataInterruptToCollapseSecondsInput);
         config.catAppearance.SecondsPersonLeavesPermanently = GetFloat(dataInterruptDestroyDelaySecondsInput);

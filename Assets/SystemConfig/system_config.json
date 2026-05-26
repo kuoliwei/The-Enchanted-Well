@@ -12,6 +12,7 @@
     "port": 9999
   },
   "catAppearance": {
+    "secondsToConfirmPeopleShowUp": 0.5,
     "secondsToRevealFullBody": 3.0,
     "SecondsPersonLeavesTemporarily": 1.0,
     "SecondsPersonLeavesPermanently": 5.0

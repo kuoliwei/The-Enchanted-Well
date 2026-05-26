@@ -52,6 +52,7 @@ public class CatManager : MonoBehaviour
     [Header("Slot Presence Settings")]
     [SerializeField]
     private float slotConfirmSeconds = 0.5f; // 某個 slot 連續存在多久才允許冒頭
+    [SerializeField] private InputField slotConfirmSecondsInput;
 
     private readonly List<CatMotionController> cats = new List<CatMotionController>();
     //private float lastFrameTime = 0f;
@@ -178,12 +179,12 @@ public class CatManager : MonoBehaviour
                 // 所以把連續存在時間歸零，等之後再重新累積
                 slotPresenceDuration[slot] = 0f;
 
-//                Debug.Log(
-//    $"[SlotDebug-State] slot {slot} | " +
-//    $"hasCat={slotToCat.ContainsKey(slot)} | " +
-//    $"isRemoving={slotRemoving.Contains(slot)} | " +
-//    $"isLocked={(slotRemovalLock.ContainsKey(slot) ? slotRemovalLock[slot] : "N/A")}"
-//);
+                //                Debug.Log(
+                //    $"[SlotDebug-State] slot {slot} | " +
+                //    $"hasCat={slotToCat.ContainsKey(slot)} | " +
+                //    $"isRemoving={slotRemoving.Contains(slot)} | " +
+                //    $"isLocked={(slotRemovalLock.ContainsKey(slot) ? slotRemovalLock[slot] : "N/A")}"
+                //);
 
                 // timeout → 解鎖（允許刪）
                 if (!slotRemovalLock.ContainsKey(slot) || slotRemovalLock[slot] != false)
@@ -1128,6 +1129,18 @@ public class CatManager : MonoBehaviour
         {
             angleShift = parsed;
             Debug.Log($"angleShift updated: {angleShift}");
+        }
+    }
+
+    public void ApplySlotConfirmSecondsFromInput()
+    {
+        if (slotConfirmSecondsInput == null)
+            return;
+
+        if (float.TryParse(slotConfirmSecondsInput.text, out float parsed))
+        {
+            slotConfirmSeconds = parsed;
+            Debug.Log($"secondsToConfirmPeopleShowUp updated: {slotConfirmSeconds}");
         }
     }
     public void SetHoldAt50DurationFromString(string value)

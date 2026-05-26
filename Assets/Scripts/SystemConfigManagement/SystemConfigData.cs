@@ -42,6 +42,10 @@ public class WebSocketConnectionConfig
 public class CatAppearanceConfig
 {
     /// <summary>
+    /// 偵測到體驗者出現後，多久才確定體驗者出現（秒）
+    /// </summary>
+    public float secondsToConfirmPeopleShowUp;
+    /// <summary>
     /// 貓咪探頭出現後，多久顯示完整身體（秒）
     /// </summary>
     public float secondsToRevealFullBody;

@@ -4,17 +4,17 @@ using UnityEngine.UI;
 
 public class CatVideoPlayerController : MonoBehaviour
 {
-    [Header("�v���C���]�|�̧ǽ����^")]
+    [Header("�v���C���]�|�̧ǽ����^")]
     public VideoClip[] videoClips;
 
-    [Header("�]�w")]
+    [Header("�]�w")]
     public bool playOnStart = true;
     public bool loopPlaylist = true;
 
-    [Header("���w����]�C���߷|�ƻs�@���^")]
+    [Header("���w����]�C���߷|�ƻs�@���^")]
     [SerializeField] private Material baseMaterial;
 
-    [Header("RenderTexture �ѪR�׳]�w")]
+    [Header("RenderTexture �ѪR�׳]�w")]
     private int rtWidth = 1920;
     private int rtHeight = 1080;
 
@@ -22,6 +22,7 @@ public class CatVideoPlayerController : MonoBehaviour
     private RawImage rawImg;
     private RenderTexture rt;
     private int currentIndex = 0;
+    private bool _pendingPlay = false;
 
     void Awake()
     {
@@ -42,6 +43,35 @@ public class CatVideoPlayerController : MonoBehaviour
         if (playOnStart)
             PlayFirstClip();
     }
+    private float _watchdogTimer = 0f;
+    private const float WatchdogInterval = 3f;   // 每 3 秒檢查一次
+
+    void Update()
+    {
+        // Pending play（從 callback 延遲到 Update）
+        if (_pendingPlay)
+        {
+            _pendingPlay = false;
+            PlayCurrentClip();
+        }
+
+        // Watchdog：偵測影片是否意外凍結
+        _watchdogTimer += Time.deltaTime;
+        if (_watchdogTimer >= WatchdogInterval)
+        {
+            _watchdogTimer = 0f;
+
+            if (videoClips != null && videoClips.Length > 0
+                && vp != null
+                && !vp.isPlaying
+                && !_pendingPlay)
+            {
+                Debug.LogWarning("[CatVideoPlayerController] 偵測到影片停止，自動重播");
+                PlayCurrentClip();
+            }
+        }
+    }
+
 
     private void AssignMaterialInstance()
     {
@@ -50,7 +80,7 @@ public class CatVideoPlayerController : MonoBehaviour
 
         if (baseMaterial == null)
         {
-            Debug.LogWarning("[CatVideoPlayerController] baseMaterial �����w");
+            Debug.LogWarning("[CatVideoPlayerController] baseMaterial �����w");
             return;
         }
 
@@ -80,12 +110,11 @@ public class CatVideoPlayerController : MonoBehaviour
         if (rawImg != null)
             rawImg.texture = rt;
     }
-
     void PlayFirstClip()
     {
         if (videoClips == null || videoClips.Length == 0)
         {
-            Debug.LogWarning("CatVideoPlayerController: videoClips ����");
+            Debug.LogWarning("CatVideoPlayerController: videoClips 是空的");
             return;
         }
 
@@ -99,9 +128,10 @@ public class CatVideoPlayerController : MonoBehaviour
             return;
 
         vp.clip = videoClips[currentIndex];
-        //vp.time = 0;
+        vp.time = 0;   // 恢復，確保每次都從頭播
         vp.Play();
     }
+
 
     void OnVideoFinished(VideoPlayer source)
     {
@@ -115,7 +145,7 @@ public class CatVideoPlayerController : MonoBehaviour
                 return;
         }
 
-        PlayCurrentClip();
+        _pendingPlay = true;   // 改成設 flag，不直接 Play
     }
 
     public void PlayClipByIndex(int index)
@@ -126,4 +156,14 @@ public class CatVideoPlayerController : MonoBehaviour
         currentIndex = index;
         PlayCurrentClip();
     }
+    // 處理 App 失去焦點（Alt+Tab、螢幕保護等）導致影片暫停
+    void OnApplicationPause(bool pauseStatus)
+    {
+        if (!pauseStatus && vp != null && !vp.isPlaying)
+        {
+            // App 恢復時，如果影片沒在播就重新播
+            vp.Play();
+        }
+    }
+
 }
