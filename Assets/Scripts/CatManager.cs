@@ -16,13 +16,13 @@ public class CatManager : MonoBehaviour
 {
     public enum CatSpawnMode
     {
-        PersonDriven, // ÂÂ¾÷¨î
-        SlotDriven    // ·s¾÷¨î
+        PersonDriven, // ï¿½Â¾ï¿½ï¿½ï¿½
+        SlotDriven    // ï¿½sï¿½ï¿½ï¿½ï¿½
     }
 
     private enum SlotHeadState
     {
-        Idle,       // ©|¥¼Ä²µo
+        Idle,       // ï¿½|ï¿½ï¿½Ä²ï¿½o
         HoldAt50,
         HoldAt100,
     }
@@ -34,16 +34,16 @@ public class CatManager : MonoBehaviour
     [Header("Data Source")]
     [SerializeField] private PoseDataReceiver poseReceiver;
 
-    [Header("Prefab¡]¥]§t¿ß±±¨î¾¹»P¼v¤ù¼½©ñ¾¹¡^")]
+    [Header("Prefabï¿½]ï¿½]ï¿½tï¿½ß±ï¿½ï¿½î¾¹ï¿½Pï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ñ¾¹¡^")]
     [SerializeField] private CatMotionController catPrefab;
 
-    [Header("¿ß¥Í¦¨ªº UI Parent")]
+    [Header("ï¿½ß¥Í¦ï¿½ï¿½ï¿½ UI Parent")]
     [SerializeField] private RectTransform catParent;
 
-    [Header("¿ßªá¦â¼v¤ù²Õ")]
+    [Header("ï¿½ßªï¿½ï¿½vï¿½ï¿½ï¿½ï¿½")]
     [SerializeField] private List<CatVideoSet> catVideoSets;
 
-    [Header("¸ê®Æ¤¤Â_§P©w¬í¼Æ")]
+    [Header("ï¿½ï¿½Æ¤ï¿½ï¿½_ï¿½Pï¿½wï¿½ï¿½ï¿½ï¿½")]
     [SerializeField] private InputField dataInterruptToCollapseSecondsInput;
     [SerializeField] private float dataInterruptToCollapseSeconds = 1;
     [SerializeField] private InputField dataInterruptDestroyDelaySecondsInput;
@@ -51,25 +51,25 @@ public class CatManager : MonoBehaviour
 
     [Header("Slot Presence Settings")]
     [SerializeField]
-    private float slotConfirmSeconds = 0.5f; // ¬Y­Ó slot ³sÄò¦s¦b¦h¤[¤~¤¹³\«_ÀY
+    private float slotConfirmSeconds = 0.5f; // ï¿½Yï¿½ï¿½ slot ï¿½sï¿½ï¿½sï¿½bï¿½hï¿½[ï¿½~ï¿½ï¿½ï¿½\ï¿½_ï¿½Y
     [SerializeField] private InputField slotConfirmSecondsInput;
 
     private readonly List<CatMotionController> cats = new List<CatMotionController>();
     //private float lastFrameTime = 0f;
     private float durationOfInterruption = 0f;
     //private Dictionary<int, int> slotToPersonIndex = new Dictionary<int, int>();
-    // ©|¥¼³Q¨Ï¥Îªº¿ß¼v¤ù index ¦À¡]¤£­«½Æ©â¡^
+    // ï¿½|ï¿½ï¿½ï¿½Qï¿½Ï¥Îªï¿½ï¿½ß¼vï¿½ï¿½ index ï¿½ï¿½ï¿½]ï¿½ï¿½ï¿½ï¿½ï¿½Æ©ï¿½^
     private List<int> availableCatIndices = new List<int>();
 
-    // °O¿ý¨C°¦¿ß¨Ï¥Îªº¬O­þ¤@­Ó¼v¤ù index¡]¥Î¨Ó¦^¦¬¡^
+    // ï¿½Oï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ß¨Ï¥Îªï¿½ï¿½Oï¿½ï¿½ï¿½@ï¿½Ó¼vï¿½ï¿½ indexï¿½]ï¿½Î¨Ó¦^ï¿½ï¿½ï¿½^
     private Dictionary<CatMotionController, int> catToVideoIndex
         = new Dictionary<CatMotionController, int>();
 
-    // SlotDriven ±M¥Î¡Gslot ¡÷ cat
+    // SlotDriven ï¿½Mï¿½Î¡Gslot ï¿½ï¿½ cat
     private Dictionary<int, CatMotionController> slotToCat
         = new Dictionary<int, CatMotionController>();
 
-    // SlotDriven¡Gslot ¡÷ head state
+    // SlotDrivenï¿½Gslot ï¿½ï¿½ head state
     private Dictionary<int, SlotHeadStateData> slotHeadStates
         = new Dictionary<int, SlotHeadStateData>();
 
@@ -84,52 +84,59 @@ public class CatManager : MonoBehaviour
 
     [Header("Slot Range Settings")]
     [SerializeField]
-    private float slotAngleRange = 20f; // ¡Ó¦h¤Ö«×¤º¤~ºâ¶i slot
+    private float slotAngleRange = 20f; // ï¿½Ó¦hï¿½Ö«×¤ï¿½ï¿½~ï¿½ï¿½i slot
 
     [Header("Angle Shift")]
     [SerializeField] private InputField angleShiftInput;
     [SerializeField] private int angleShift = 45;
     private int internalShift => -angleShift;
 
-    // ======== ¡¹ ¨¤«×¤Á´« threshold ³]©w ========
+    // ======== ï¿½ï¿½ ï¿½ï¿½ï¿½×¤ï¿½ï¿½ï¿½ threshold ï¿½]ï¿½w ========
     [Header("Angle Switch Threshold")]
     [SerializeField]
     private float angleSwitchThreshold = 10f;
 
-    // ======== ¡¹ °O¿ý¨C­Ó¤Hªº¤W¤@­Ó slot ========
+    // ======== ï¿½ï¿½ ï¿½Oï¿½ï¿½ï¿½Cï¿½Ó¤Hï¿½ï¿½ï¿½Wï¿½@ï¿½ï¿½ slot ========
     private Dictionary<int, int> personLastSlot = new Dictionary<int, int>();
 
-    // Slot ¡÷ ³Ì«á¤@¦¸³Q¡u¥ô¦ó¤H¡v¦û¥Îªº®É¶¡
+    // Slot ï¿½ï¿½ ï¿½Ì«ï¿½@ï¿½ï¿½ï¿½Qï¿½uï¿½ï¿½ï¿½ï¿½Hï¿½vï¿½ï¿½ï¿½Îªï¿½ï¿½É¶ï¿½
     private Dictionary<int, float> slotLastSeenTime = new Dictionary<int, float>();
 
-    // Slot ¡÷ ³sÄò¦s¦b®É¶¡¡]¦b Update ¤¤¥Î Time.deltaTime ²Ö¿n¡^
+    // Slot ï¿½ï¿½ ï¿½sï¿½ï¿½sï¿½bï¿½É¶ï¿½ï¿½]ï¿½b Update ï¿½ï¿½ï¿½ï¿½ Time.deltaTime ï¿½Ö¿nï¿½^
     private Dictionary<int, float> slotPresenceDuration = new Dictionary<int, float>();
 
-    // slot ¡÷ ¬O§_Âê©w¡]true = ¤£­ã²¾°£¡^
+    // slot ï¿½ï¿½ ï¿½Oï¿½_ï¿½ï¿½wï¿½]true = ï¿½ï¿½ï¿½ã²¾ï¿½ï¿½ï¿½^
     private Dictionary<int, bool> slotRemovalLock = new Dictionary<int, bool>();
 
-    // slot ¡÷ destroy coroutine
+    // slot ï¿½ï¿½ destroy coroutine
     private Dictionary<int, Coroutine> slotDestroyCoroutines
         = new Dictionary<int, Coroutine>();
 
-    // ======== ¡¹ skeletonPercent ÅÜ§óªùÂe³]©w ========
+    // Global presence signal for external listeners (e.g. sound controller).
+    // Mirrors the same slotConfirmSeconds-based confirmation used for cat trigger,
+    // but aggregated across all slots: true while at least one slot is confirmed-present.
+    public event Action OnAnyoneConfirmedPresent;
+    public event Action OnEveryoneLeft;
+    private bool anyoneConfirmedPresent = false;
+
+    // ======== ï¿½ï¿½ skeletonPercent ï¿½Ü§ï¿½ï¿½ï¿½eï¿½]ï¿½w ========
     [Header("Skeleton Percent Switch Threshold")]
     [SerializeField]
-    private int skeletonPercentThresholdCount = 30;   // ³sÄò´Xµ§¤~¤¹³\ÅÜ§ó¡]¥i¦b Inspector ½Õ¾ã¡^
+    private int skeletonPercentThresholdCount = 30;   // ï¿½sï¿½ï¿½Xï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½\ï¿½Ü§ï¿½]ï¿½iï¿½b Inspector ï¿½Õ¾ï¿½^
 
-    // SlotDriven¡G¥¿¦b²¾°£¤¤ªº slot¡]Á×§K­«½ÆÄ²µo»P­«¥Í¡^
+    // SlotDrivenï¿½Gï¿½ï¿½ï¿½bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ slotï¿½]ï¿½×§Kï¿½ï¿½ï¿½ï¿½Ä²ï¿½oï¿½Pï¿½ï¿½ï¿½Í¡^
     private HashSet<int> slotRemoving = new HashSet<int>();
 
-    // ¨C­Ó¤Hªº skeleton ¦Ê¤À¤ñÃ­©wª¬ºA
+    // ï¿½Cï¿½Ó¤Hï¿½ï¿½ skeleton ï¿½Ê¤ï¿½ï¿½ï¿½Ã­ï¿½wï¿½ï¿½ï¿½A
     private class SkeletonPercentCounter
     {
-        public float currentValue = 0f;   // ¥Ø«e¤w±Ä¥ÎªºÃ­©w¼Æ­È¡]0 / 50 / 100¡^
-        public float pendingValue = 0f;   // ¥¿¦b¹Á¸Õ¤Á´«ªº·s¼Æ­È
-        public int pendingCount = 0;      // pendingValue ¤w³sÄò¥X²{´X¦¸
-        public bool initialized = false;  // ¬O§_¤wªì©l¤Æ
+        public float currentValue = 0f;   // ï¿½Ø«eï¿½wï¿½Ä¥Îªï¿½Ã­ï¿½wï¿½Æ­È¡]0 / 50 / 100ï¿½^
+        public float pendingValue = 0f;   // ï¿½ï¿½ï¿½bï¿½ï¿½ï¿½Õ¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½Æ­ï¿½
+        public int pendingCount = 0;      // pendingValue ï¿½wï¿½sï¿½ï¿½Xï¿½{ï¿½Xï¿½ï¿½
+        public bool initialized = false;  // ï¿½Oï¿½_ï¿½wï¿½ï¿½lï¿½ï¿½
     }
 
-    // personIndex ¡÷ SkeletonPercentCounter
+    // personIndex ï¿½ï¿½ SkeletonPercentCounter
     private Dictionary<int, SkeletonPercentCounter> skeletonPercentCounters
         = new Dictionary<int, SkeletonPercentCounter>();
 
@@ -145,24 +152,24 @@ public class CatManager : MonoBehaviour
     private void Start()
     {
         catToVideoIndex.Clear();
-        ResetAvailableCats(); // ªì©l¤Æ¥i©â¿ß¦À
+        ResetAvailableCats(); // ï¿½ï¿½lï¿½Æ¥iï¿½ï¿½ß¦ï¿½
         if (poseReceiver != null)
             poseReceiver.OnSkeletonFrame += OnSkeletonFrame;
         else
-            Debug.LogError("[CatManager] poseReceiver ¥¼³]©w");
+            Debug.LogError("[CatManager] poseReceiver ï¿½ï¿½ï¿½]ï¿½w");
 
         Debug.Log($"[Init] slotRemoving count = {slotRemoving.Count}");
     }
 
     private void Update()
     {
-        //// ¸ê®Æ¤¤Â_°»´ú
+        //// ï¿½ï¿½Æ¤ï¿½ï¿½_ï¿½ï¿½ï¿½ï¿½
         //if (Time.time - lastFrameTime > timeoutSeconds)
         //{
         //    if (cats.Count > 0)
         //    {
         //        ClearAllCatsImmediate();
-        //        Debug.Log("[CatManager] ¸ê®Æ¤¤Â_¡A¥ß§Y²MªÅ©Ò¦³¿ß");
+        //        Debug.Log("[CatManager] ï¿½ï¿½Æ¤ï¿½ï¿½_ï¿½Aï¿½ß§Yï¿½Mï¿½Å©Ò¦ï¿½ï¿½ï¿½");
         //    }
         //    SmoothRemoveAllCats();
         //}
@@ -175,8 +182,8 @@ public class CatManager : MonoBehaviour
 
             if (missingTime > dataInterruptToCollapseSeconds)
             {
-                // ¤@¥¹¶W¹L timeout¡Aªí¥Ü³o­Ó slot ¤w¸g¡u¤£ºâ«ùÄò¦³¤H¡v¡A
-                // ©Ò¥H§â³sÄò¦s¦b®É¶¡Âk¹s¡Aµ¥¤§«á¦A­«·s²Ö¿n
+                // ï¿½@ï¿½ï¿½ï¿½Wï¿½L timeoutï¿½Aï¿½ï¿½ï¿½Ü³oï¿½ï¿½ slot ï¿½wï¿½gï¿½uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ò¦³¤Hï¿½vï¿½A
+                // ï¿½Ò¥Hï¿½ï¿½sï¿½ï¿½sï¿½bï¿½É¶ï¿½ï¿½kï¿½sï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½sï¿½Ö¿n
                 slotPresenceDuration[slot] = 0f;
 
                 //                Debug.Log(
@@ -186,7 +193,7 @@ public class CatManager : MonoBehaviour
                 //    $"isLocked={(slotRemovalLock.ContainsKey(slot) ? slotRemovalLock[slot] : "N/A")}"
                 //);
 
-                // timeout ¡÷ ¸ÑÂê¡]¤¹³\§R¡^
+                // timeout ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½]ï¿½ï¿½ï¿½\ï¿½Rï¿½^
                 if (!slotRemovalLock.ContainsKey(slot) || slotRemovalLock[slot] != false)
                 {
                     slotRemovalLock[slot] = false;
@@ -197,7 +204,7 @@ public class CatManager : MonoBehaviour
                 //    $"[SlotTimeout] slot {slot} NO PERSON for {missingTime:F2}s (>{dataInterruptToCollapseSeconds}s)"
                 //);
 
-                // ÃöÁä¡G§R°£´Á¶¡Âê
+                // ï¿½ï¿½ï¿½ï¿½Gï¿½Rï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 if (slotRemoving.Contains(slot))
                 {
                     Debug.Log(
@@ -209,7 +216,7 @@ public class CatManager : MonoBehaviour
                     if (slotToCat.TryGetValue(slot, out var cat))
                     {
                         Debug.Log($"[SlotRemove] slot {slot} START remove cat, cat.isReached0:{cat.isReached0}");
-                        // ¤À¬y¡G¥¼´¿«_ÀY ¡÷ ¥ß§Y§R°£
+                        // ï¿½ï¿½ï¿½yï¿½Gï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½Y ï¿½ï¿½ ï¿½ß§Yï¿½Rï¿½ï¿½
                         if (cat.isReached0 && !cat.IsPoppedUpTriggered)
                         {
                             RemoveSlotCatImmediate(slot, cat);
@@ -223,14 +230,14 @@ public class CatManager : MonoBehaviour
             }
             else
             {
-                // ©|¥¼¶W¹L timeout ¡÷ µø¬°³o­Ó slot ¤´µM¡u«ùÄò¦³¤H¡v
-                // ¦b³o¸Ì¥Î Time.deltaTime ²Ö¿n¡u³sÄò¦s¦b®É¶¡¡v
+                // ï¿½|ï¿½ï¿½ï¿½Wï¿½L timeout ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½ï¿½ slot ï¿½ï¿½ï¿½Mï¿½uï¿½ï¿½ï¿½ò¦³¤Hï¿½v
+                // ï¿½bï¿½oï¿½Ì¥ï¿½ Time.deltaTime ï¿½Ö¿nï¿½uï¿½sï¿½ï¿½sï¿½bï¿½É¶ï¿½ï¿½v
                 float duration = 0f;
                 slotPresenceDuration.TryGetValue(slot, out duration);
                 duration += Time.deltaTime;
                 slotPresenceDuration[slot] = duration;
 
-                // ©|¥¼¶W¹L timeout ¡÷ ¤WÂê¡]¸T¤î³Q²M±¼¡^
+                // ï¿½|ï¿½ï¿½ï¿½Wï¿½L timeout ï¿½ï¿½ ï¿½Wï¿½ï¿½]ï¿½Tï¿½ï¿½Qï¿½Mï¿½ï¿½ï¿½^
                 if (!slotRemovalLock.ContainsKey(slot) || slotRemovalLock[slot] != true)
                 {
                     slotRemovalLock[slot] = true;
@@ -240,19 +247,19 @@ public class CatManager : MonoBehaviour
             }
         }
         durationOfInterruption += Time.deltaTime;
-        // ¸ê®Æ¤¤Â_°»´ú
+        // ï¿½ï¿½Æ¤ï¿½ï¿½_ï¿½ï¿½ï¿½ï¿½
         if (durationOfInterruption > dataInterruptToCollapseSeconds)
         {
             //Debug.Log($"durationOfInterruption:{durationOfInterruption}");
             if (spawnMode == CatSpawnMode.PersonDriven && cats.Count > 0)
             {
                 SmoothRemoveAllCats();
-                Debug.Log("[CatManager] ¸ê®Æ¤¤Â_¡A¥ß§Y²MªÅ©Ò¦³¿ß");
+                Debug.Log("[CatManager] ï¿½ï¿½Æ¤ï¿½ï¿½_ï¿½Aï¿½ß§Yï¿½Mï¿½Å©Ò¦ï¿½ï¿½ï¿½");
             }
             //if (spawnMode == CatSpawnMode.SlotDriven && slotToCat.Count > 0)
             //{
             //    SmoothRemoveAllCats();
-            //    Debug.Log("[CatManager] ¸ê®Æ¤¤Â_¡A¥ß§Y²MªÅ©Ò¦³¿ß");
+            //    Debug.Log("[CatManager] ï¿½ï¿½Æ¤ï¿½ï¿½_ï¿½Aï¿½ß§Yï¿½Mï¿½Å©Ò¦ï¿½ï¿½ï¿½");
             //}
             durationOfInterruption = 0;
         }
@@ -269,19 +276,19 @@ public class CatManager : MonoBehaviour
     {
         if (availableCatIndices.Count == 0)
         {
-            Debug.LogWarning("[CatManager] ¨S¦³¥i¥Îªº¿ß¥i¥H¤À°t");
+            Debug.LogWarning("[CatManager] ï¿½Sï¿½ï¿½ï¿½iï¿½Îªï¿½ï¿½ß¥iï¿½Hï¿½ï¿½ï¿½t");
             return -1;
         }
 
         int r = UnityEngine.Random.Range(0, availableCatIndices.Count);
         int catIndex = availableCatIndices[r];
 
-        // ©â¨«´N²¾°£¡A½T«O¤£­«½Æ
+        // ï¿½â¨«ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Tï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         availableCatIndices.RemoveAt(r);
 
         return catIndex;
     }
-    // ¥ß§Y§R°£¡A¤£µ¥ frame µ²§ô
+    // ï¿½ß§Yï¿½Rï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ frame ï¿½ï¿½ï¿½ï¿½
     private void ClearAllCatsImmediate()
     {
         if (spawnMode == CatSpawnMode.PersonDriven)
@@ -310,10 +317,10 @@ public class CatManager : MonoBehaviour
         }
 
         slotRemoving.Clear();
-        personLastSlot.Clear(); // Á×§KÂÂ¨¤«×´Ý¯d
-        skeletonPercentCounters.Clear(); // ¦P¨B²MªÅ¦Ê¤À¤ñª¬ºA
+        personLastSlot.Clear(); // ï¿½×§Kï¿½Â¨ï¿½ï¿½×´Ý¯d
+        skeletonPercentCounters.Clear(); // ï¿½Pï¿½Bï¿½Mï¿½Å¦Ê¤ï¿½ï¿½ñª¬ºA
         slotPresenceDuration.Clear();
-        ResetAvailableCats(); // ­«¸m¥i©â¿ß¦À
+        ResetAvailableCats(); // ï¿½ï¿½ï¿½mï¿½iï¿½ï¿½ß¦ï¿½
         slotHeadStates.Clear();
         Debug.Log($"[ClearAllCatsImmediate] slotRemoving cleared, count={slotRemoving.Count}");
 
@@ -321,7 +328,7 @@ public class CatManager : MonoBehaviour
 
     private void EnsureCatCount(int count)
     {
-        // ¥Í¦¨¤£¨¬ªº¿ß
+        // ï¿½Í¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         while (cats.Count < count)
         {
             var newCat = Instantiate(catPrefab, catParent);
@@ -329,7 +336,7 @@ public class CatManager : MonoBehaviour
             cats.Add(newCat);
         }
 
-        // §R°£¦h¾lªº¿ß
+        // ï¿½Rï¿½ï¿½ï¿½hï¿½lï¿½ï¿½ï¿½ï¿½
         //while (cats.Count > count)
         //{
         //    DestroyImmediate(cats[cats.Count - 1].gameObject);
@@ -339,7 +346,7 @@ public class CatManager : MonoBehaviour
         {
             var lastCat = cats[cats.Count - 1];
 
-            // ¦^¦¬³o°¦¿ß¨Ï¥Îªº¼v¤ù index
+            // ï¿½^ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½ß¨Ï¥Îªï¿½ï¿½vï¿½ï¿½ index
             if (catToVideoIndex.TryGetValue(lastCat, out int usedIndex))
             {
                 if (!availableCatIndices.Contains(usedIndex))
@@ -371,7 +378,7 @@ public class CatManager : MonoBehaviour
 
         if (cat != null)
         {
-            // ¦^¦¬¼v¤ù index¡]ÃöÁä¡^
+            // ï¿½^ï¿½ï¿½ï¿½vï¿½ï¿½ indexï¿½]ï¿½ï¿½ï¿½ï¿½^
             RecycleCatVideo(cat);
 
             Destroy(cat.gameObject);
@@ -413,7 +420,7 @@ public class CatManager : MonoBehaviour
     }
     private void RemoveSlotCatWithCollapse(int slot, CatMotionController cat)
     {
-        // ¤w¦b²¾°£¤¤´N¤£­n­«½ÆÄ²µo
+        // ï¿½wï¿½bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½nï¿½ï¿½ï¿½ï¿½Ä²ï¿½o
         if (slotRemoving.Contains(slot))
             return;
 
@@ -425,12 +432,12 @@ public class CatManager : MonoBehaviour
     private IEnumerator DestroySlotCatAfterDelay(int slot, CatMotionController cat, float delay)
     {
 
-        // ³o¬q°ò¥»ªu¥Î§A­ì¥» DestroyCatAfterDelay ªº¬yµ{
+        // ï¿½oï¿½qï¿½ò¥»ªuï¿½Î§Aï¿½ì¥» DestroyCatAfterDelay ï¿½ï¿½ï¿½yï¿½{
         yield return new WaitUntil(() => cat == null || cat.isReached100);
 
         if (cat == null)
         {
-            // ¿ß¤w¸g¤£¦s¦b¡A¦¬§À²M²z
+            // ï¿½ß¤wï¿½gï¿½ï¿½ï¿½sï¿½bï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Mï¿½z
             slotToCat.Remove(slot);
             slotHeadStates.Remove(slot);
             Debug.Log($"[SlotRemovingRemove] slot {slot} (cat already null)");
@@ -453,7 +460,7 @@ public class CatManager : MonoBehaviour
             Destroy(cat.gameObject);
         }
 
-        // ³Ì­«­n¡GDestroy ¤§«á¤~ÄÀ©ñ slot
+        // ï¿½Ì­ï¿½ï¿½nï¿½GDestroy ï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ slot
         slotToCat.Remove(slot);
         slotHeadStates.Remove(slot);
         Debug.Log($"[SlotRemovingRemove] slot {slot} (after collapse)");
@@ -464,7 +471,7 @@ public class CatManager : MonoBehaviour
     {
         Debug.Log($"[SlotRemoveImmediate] slot {slot} remove cat immediately");
 
-        // »P²{¦æ¬yµ{¤@­P¡GÁ×§K­«½Æ§R°£
+        // ï¿½Pï¿½{ï¿½ï¿½yï¿½{ï¿½@ï¿½Pï¿½Gï¿½×§Kï¿½ï¿½ï¿½Æ§Rï¿½ï¿½
         if (slotRemoving.Contains(slot))
             return;
 
@@ -480,16 +487,16 @@ public class CatManager : MonoBehaviour
 
         if (cat != null)
         {
-            // »P coroutine ¬yµ{¤@­P¡G¦^¦¬¼v¤ù index
+            // ï¿½P coroutine ï¿½yï¿½{ï¿½@ï¿½Pï¿½Gï¿½^ï¿½ï¿½ï¿½vï¿½ï¿½ index
             RecycleCatVideo(cat);
 
-            // ¥ß§Y§R°£
+            // ï¿½ß§Yï¿½Rï¿½ï¿½
             Destroy(cat.gameObject);
             Debug.Log($"[SlotRemovingRemove] slot {slot} by RemoveSlotCatImmediate");
             slotRemoving.Remove(slot);
         }
 
-        // »P DestroySlotCatAfterDelay µ²§À§¹¥þ¤@­P
+        // ï¿½P DestroySlotCatAfterDelay ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½@ï¿½P
         slotToCat.Remove(slot);
         slotHeadStates.Remove(slot);
         //if (slotRemoving.Contains(slot))
@@ -515,13 +522,13 @@ public class CatManager : MonoBehaviour
 
         if (vp == null)
         {
-            Debug.LogWarning("[CatManager] §ä¤£¨ì CatVideoPlayerController");
+            Debug.LogWarning("[CatManager] ï¿½ä¤£ï¿½ï¿½ CatVideoPlayerController");
             return;
         }
 
         if (catVideoSets == null || catVideoSets.Count == 0)
         {
-            Debug.LogWarning("[CatManager] catVideoSets ¬OªÅªº");
+            Debug.LogWarning("[CatManager] catVideoSets ï¿½Oï¿½Åªï¿½");
             return;
         }
 
@@ -530,7 +537,7 @@ public class CatManager : MonoBehaviour
         if (index < 0)
             return;
         vp.videoClips = catVideoSets[index].clips;
-        // °O¿ý³o°¦¿ß¨Ï¥Îªº¼v¤ù index¡]¤§«á§R°£®É­n¦^¦¬¡^
+        // ï¿½Oï¿½ï¿½ï¿½oï¿½ï¿½ï¿½ß¨Ï¥Îªï¿½ï¿½vï¿½ï¿½ indexï¿½]ï¿½ï¿½ï¿½ï¿½Rï¿½ï¿½ï¿½É­nï¿½^ï¿½ï¿½ï¿½^
         catToVideoIndex[cat] = index;
     }
 
@@ -543,7 +550,7 @@ public class CatManager : MonoBehaviour
 
         if (frame == null) return;
 
-        //lastFrameTime = Time.time;          // ¥þ°ìÂ_°T¥u¬Ý¡u¦³¨S¦³¦¬¨ì frame¡v
+        //lastFrameTime = Time.time;          // ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½Tï¿½uï¿½Ý¡uï¿½ï¿½ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ frameï¿½v
         HandleSkeletonData(frame.angles, frame.skeletonPercent);
     }
 
@@ -564,8 +571,8 @@ public class CatManager : MonoBehaviour
             }
             //else if (spawnMode == CatSpawnMode.SlotDriven)
             //{
-            //    // SlotDriven¡GÂ_°T/¨S¤H®É¡A¤£­n Clear slotToCat
-            //    // ¥uÄ²µo¡u©µ¿ð²¾°£¡v¡Aµ¥ Destroy §¹¤~ÄÀ©ñ slot
+            //    // SlotDrivenï¿½Gï¿½_ï¿½T/ï¿½Sï¿½Hï¿½É¡Aï¿½ï¿½ï¿½n Clear slotToCat
+            //    // ï¿½uÄ²ï¿½oï¿½uï¿½ï¿½ï¿½ð²¾°ï¿½ï¿½vï¿½Aï¿½ï¿½ Destroy ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ slot
             //    var slots = new List<int>(slotToCat.Keys);
             //    for (int i = 0; i < slots.Count; i++)
             //    {
@@ -576,7 +583,7 @@ public class CatManager : MonoBehaviour
 
             return;
         }
-        // ²¾°£¤wÂ÷³õªº personIndex¡]Á×§K´Ý¯dª¬ºA¡^
+        // ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ personIndexï¿½]ï¿½×§Kï¿½Ý¯dï¿½ï¿½ï¿½Aï¿½^
         var removeList = new List<int>();
         foreach (var key in personLastSlot.Keys)
         {
@@ -595,17 +602,17 @@ public class CatManager : MonoBehaviour
 
         //slotToPersonIndex.Clear();
 
-        // ¨Ì¶¶¦ì³B²z¨C­Ó¤H
+        // ï¿½Ì¶ï¿½ï¿½ï¿½Bï¿½zï¿½Cï¿½Ó¤H
         for (int i = 0; i < personCount; i++)
         {
             float rawAngle = angles[i];
 
-            // ®y¼ÐÂà´«¡]­ì¼Ë«O¯d¡^
+            // ï¿½yï¿½ï¿½ï¿½à´«ï¿½]ï¿½ï¿½Ë«Oï¿½dï¿½^
             float ext = Mathf.Repeat(rawAngle, 360f);
             float internalAngle = internalShift - ext;
             if (internalAngle < 0f) internalAngle += 360f;
 
-            //// ¶q¤Æ¨ì slot
+            //// ï¿½qï¿½Æ¨ï¿½ slot
             //int best = snapAngles[0];
             //float bestDist = Mathf.Abs(internalAngle - snapAngles[0]);
 
@@ -619,7 +626,7 @@ public class CatManager : MonoBehaviour
             //    }
             //}
 
-            // ¶q¤Æ¨ì slot¡]¥[¤W¦³®Ä½d³ò­­¨î¡^
+            // ï¿½qï¿½Æ¨ï¿½ slotï¿½]ï¿½[ï¿½Wï¿½ï¿½ï¿½Ä½dï¿½ò­­¨ï¿½^
             int best = -1;
             float bestDist = float.MaxValue;
 
@@ -629,13 +636,13 @@ public class CatManager : MonoBehaviour
                 if (slotAngle == 360)
                     slotAngle = 0;
 
-                // ¡¹ ÃöÁä¡Gslot ¨¤«×¤]­n¶i internalAngle ªÅ¶¡
+                // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Gslot ï¿½ï¿½ï¿½×¤]ï¿½nï¿½i internalAngle ï¿½Å¶ï¿½
                 float slotInternal = internalShift - slotAngle;
                 if (slotInternal < 0f) slotInternal += 360f;
 
                 float dist = Mathf.Abs(Mathf.DeltaAngle(internalAngle, slotInternal));
 
-                // ¡¹ ¶W¥X slotRange¡Aª½±µ²¤¹L
+                // ï¿½ï¿½ ï¿½Wï¿½X slotRangeï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½L
                 if (dist > slotAngleRange)
                     continue;
 
@@ -646,10 +653,10 @@ public class CatManager : MonoBehaviour
                 }
             }
 
-            // ¡¹ ¦pªG¨S¦³¥ô¦ó slot ¦b½d³ò¤º¡A³o­Ó¤Hª½±µ²¤¹L
+            // ï¿½ï¿½ ï¿½pï¿½Gï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ slot ï¿½bï¿½dï¿½ò¤º¡Aï¿½oï¿½Ó¤Hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½L
             if (best < 0)
             {
-                // ³o­Ó¤H¤£¦û¥ô¦ó slot¡A¤]¤£²£¥Í¿ß
+                // ï¿½oï¿½Ó¤Hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ slotï¿½Aï¿½]ï¿½ï¿½ï¿½ï¿½ï¿½Í¿ï¿½
                 continue;
             }
 
@@ -657,7 +664,7 @@ public class CatManager : MonoBehaviour
             if (best == 360)
                 best = 0;
 
-            // ======== ¡¹ ·s¼W¡G¨¤«×¤Á´« threshold ========
+            // ======== ï¿½ï¿½ ï¿½sï¿½Wï¿½Gï¿½ï¿½ï¿½×¤ï¿½ï¿½ï¿½ threshold ========
             int finalSlot = best;
 
             if (personLastSlot.TryGetValue(i, out int lastSlot))
@@ -669,12 +676,12 @@ public class CatManager : MonoBehaviour
 
                 if (distFromLast < angleSwitchThreshold)
                 {
-                    // ÁÙ¦b¤Á´«ªùÂe¤º ¡÷ ªu¥ÎÂÂ slot
+                    // ï¿½Ù¦bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½eï¿½ï¿½ ï¿½ï¿½ ï¿½uï¿½ï¿½ï¿½ï¿½ slot
                     finalSlot = lastSlot;
                 }
                 else
                 {
-                    // ¯u¥¿´« slot ¡÷ ­«¸m skeletonPercent
+                    // ï¿½uï¿½ï¿½ï¿½ï¿½ slot ï¿½ï¿½ ï¿½ï¿½ï¿½m skeletonPercent
                     skeletonPercentCounters.Remove(i);
                 }
             }
@@ -682,7 +689,7 @@ public class CatManager : MonoBehaviour
             personLastSlot[i] = finalSlot;
             best = finalSlot;
 
-            // °O¿ý slot ¡÷ persons
+            // ï¿½Oï¿½ï¿½ slot ï¿½ï¿½ persons
             if (!slotToPersons.TryGetValue(finalSlot, out var list))
             {
                 list = new List<int>();
@@ -691,7 +698,7 @@ public class CatManager : MonoBehaviour
             list.Add(i);
             // ============================================
 
-            // ¦P¤@¨¤«×¥u¤¹³\¤@°¦¿ß¡]­ì¼Ë«O¯d¡^
+            // ï¿½Pï¿½@ï¿½ï¿½ï¿½×¥uï¿½ï¿½ï¿½\ï¿½@ï¿½ï¿½ï¿½ß¡]ï¿½ï¿½Ë«Oï¿½dï¿½^
             //if (slotToPersonIndex.ContainsKey(best))
             //    continue;
 
@@ -699,7 +706,7 @@ public class CatManager : MonoBehaviour
             //slotToPersonIndex[best] = i;
         }
 
-        // ½T«O¿ß¼Æ¶q = ¦³®Ä slot ¼Æ
+        // ï¿½Tï¿½Oï¿½ß¼Æ¶q = ï¿½ï¿½ï¿½ï¿½ slot ï¿½ï¿½
         //EnsureCatCount(slotToPersonIndex.Count);
         //EnsureCatCount(personCount);
 
@@ -708,7 +715,7 @@ public class CatManager : MonoBehaviour
         //{
         //    int personIndex = kvp.Value;
 
-        //    // ¥ý¸g¹LªùÂe¾÷¨î¡A¨ú±o¡uÃ­©w«á¡vªº¦Ê¤À¤ñ
+        //    // ï¿½ï¿½ï¿½gï¿½Lï¿½ï¿½ï¿½eï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½oï¿½uÃ­ï¿½wï¿½ï¿½vï¿½ï¿½ï¿½Ê¤ï¿½ï¿½ï¿½
         //    float stablePercent = GetStableSkeletonPercent(
         //        personIndex,
         //        skeletonPercent[personIndex]
@@ -735,7 +742,7 @@ public class CatManager : MonoBehaviour
                 int slot = personLastSlot[personIndex];
                 float finalPercent = stablePercent;
 
-                // ¦pªG¦P¤@­Ó slot ¦³¦h­Ó¤H¡A¥u¤¹³\¶¶¦ì²Ä¤@ªº¤H«_ÀY
+                // ï¿½pï¿½Gï¿½Pï¿½@ï¿½ï¿½ slot ï¿½ï¿½ï¿½hï¿½Ó¤Hï¿½Aï¿½uï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½Ä¤@ï¿½ï¿½ï¿½Hï¿½_ï¿½Y
                 if (slotToPersons.TryGetValue(slot, out var personsInSlot))
                 {
                     //int allowedPerson = personsInSlot[0];
@@ -770,7 +777,7 @@ public class CatManager : MonoBehaviour
                     if (personIndex != allowedPerson)
                     {
                         finalPercent = 0f;
-                        // ¥ß¨è±j¨îÁYÀY¡AÁ×§KÀþ¶¡­«Å|
+                        // ï¿½ß¨ï¿½jï¿½ï¿½ï¿½Yï¿½Yï¿½Aï¿½×§Kï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½|
                         //cats[personIndex].ForceCollapseToZero();
                         if (!cats[personIndex].IsCollapsed)
                             cats[personIndex].ForceCollapseToZero();
@@ -786,19 +793,19 @@ public class CatManager : MonoBehaviour
         }
         else if (spawnMode == CatSpawnMode.SlotDriven)
         {
-            // ¥Ø«e¦³¤Hªº slot
+            // ï¿½Ø«eï¿½ï¿½ï¿½Hï¿½ï¿½ slot
             var activeSlotSet = new HashSet<int>(slotToPersons.Keys);
 
             float now = Time.time;
 
-            // §ó·s¡G©Ò¦³¥»´V¦³¤Hªº slot
+            // ï¿½ï¿½sï¿½Gï¿½Ò¦ï¿½ï¿½ï¿½ï¿½Vï¿½ï¿½ï¿½Hï¿½ï¿½ slot
             foreach (int slot in activeSlotSet)
             {
                 slotLastSeenTime[slot] = now;
             }
 
 
-            // ²¾°£¡u¤w¸g¨S¤H¡vªº slot¡]¥ýÁYÀY¦A§R¡^
+            // ï¿½ï¿½ï¿½ï¿½ï¿½uï¿½wï¿½gï¿½Sï¿½Hï¿½vï¿½ï¿½ slotï¿½]ï¿½ï¿½ï¿½Yï¿½Yï¿½Aï¿½Rï¿½^
             var removeSlots = new List<int>();
 
             //foreach (var kv in slotToCat)
@@ -814,7 +821,7 @@ public class CatManager : MonoBehaviour
             //{
             //    int slot = removeSlots[i];
             //    slotToCat.Remove(slot);
-            //    slotHeadStates.Remove(slot); // ÃöÁä¡G¦P¨B²M±¼ª¬ºA
+            //    slotHeadStates.Remove(slot); // ï¿½ï¿½ï¿½ï¿½Gï¿½Pï¿½Bï¿½Mï¿½ï¿½ï¿½ï¿½ï¿½A
             //}
 
             //foreach (var kv in slotToCat)
@@ -825,7 +832,7 @@ public class CatManager : MonoBehaviour
             //    }
             //}
 
-            // ¬°¡u·s¥X²{ªº slot¡v¥Í¦¨¿ß
+            // ï¿½ï¿½ï¿½uï¿½sï¿½Xï¿½{ï¿½ï¿½ slotï¿½vï¿½Í¦ï¿½ï¿½ï¿½
             foreach (int slot in activeSlotSet)
             {
                 if (!slotToCat.ContainsKey(slot))
@@ -838,30 +845,31 @@ public class CatManager : MonoBehaviour
                 {
                     var cat = slotToCat[slot];
 
-                    // ­Y¦¹¿ß´¿¸g«_¥XÀY¡A¥B¦]¤HÂ÷¶}¦ÓÁYÀY¡A
-                    // ·í¤H¦^¨ì¸Ó slot ®É¡A¨ú®ø§R°£¨Ã­«³]¬°µ¥«Ý«_ÀYª¬ºA
+                    // ï¿½Yï¿½ï¿½ï¿½ß´ï¿½ï¿½gï¿½_ï¿½Xï¿½Yï¿½Aï¿½Bï¿½]ï¿½Hï¿½ï¿½ï¿½}ï¿½ï¿½ï¿½Yï¿½Yï¿½A
+                    // ï¿½ï¿½ï¿½Hï¿½^ï¿½ï¿½ï¿½ slot ï¿½É¡Aï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½ï¿½ï¿½Ã­ï¿½ï¿½]ï¿½ï¿½ï¿½ï¿½ï¿½Ý«_ï¿½Yï¿½ï¿½ï¿½A
                     if (cat.hasPoppedAndCollapsed)
                     {
                         Debug.Log($"[SlotCatReset] slot {slot} reset collapsed cat");
 
-                        // ­Y¤w¦³±Ò°Ê§R°£¨óµ{¡A¥ý¨ú®ø
+                        // ï¿½Yï¿½wï¿½ï¿½ï¿½Ò°Ê§Rï¿½ï¿½ï¿½ï¿½{ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                         if (slotDestroyCoroutines.TryGetValue(slot, out var co))
                         {
                             StopCoroutine(co);
                             slotDestroyCoroutines.Remove(slot);
                         }
 
-                        // ²¾°£¸Ó slot ªº²¾°£¤¤ª¬ºA
+                        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ slot ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½A
                         slotRemoving.Remove(slot);
 
-                        // ­«³]«_ÀY¬ÛÃöºX¼Ð¡AÅý«áÄò slotConfirmSeconds ¥i¦A¦¸Ä²µo
+                        // ï¿½ï¿½ï¿½]ï¿½_ï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½Ð¡Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ slotConfirmSeconds ï¿½iï¿½Aï¿½ï¿½Ä²ï¿½o
                         cat.IsPoppedUpTriggered = false;
                         cat.hasPoppedAndCollapsed = false;
                     }
                 }
             }
 
-            // §ó·s¨C­Ó slot ¹ïÀ³ªº¿ß¡]¤£·|¦A´«¡^
+            // ï¿½ï¿½sï¿½Cï¿½ï¿½ slot ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¡]ï¿½ï¿½ï¿½|ï¿½Aï¿½ï¿½ï¿½^
+            bool anyConfirmedThisFrame = false;
             foreach (var kv in slotToCat)
             {
                 int slot = kv.Key;
@@ -869,12 +877,12 @@ public class CatManager : MonoBehaviour
 
                 if (!slotToPersons.TryGetValue(slot, out var personsInSlot))
                 {
-                    // ¥»´V³o­Ó slot ¨S¦³¤H¡]¥¿±`ª¬ºA¡^
-                    // ª½±µ¸õ¹L§ó·s¡A¤£¬O¿ù»~
+                    // ï¿½ï¿½ï¿½Vï¿½oï¿½ï¿½ slot ï¿½Sï¿½ï¿½ï¿½Hï¿½]ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½Aï¿½^
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½sï¿½Aï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½~
                     continue;
                 }
 
-                // ¨ú¸Ó slot ¤¤¶¶¦ì³Ì«e­±ªº¤H
+                // ï¿½ï¿½ï¿½ï¿½ slot ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì«eï¿½ï¿½ï¿½ï¿½ï¿½H
                 //int allowedPerson = personsInSlot[0];
                 //for (int k = 1; k < personsInSlot.Count; k++)
                 //{
@@ -905,16 +913,16 @@ public class CatManager : MonoBehaviour
 
                 int allowedPerson = GetClosestPersonToSlot(slot, personsInSlot, angles);
 
-                // === SlotDriven¡G¤£¦Aª½±µ¨Ï¥Î skeletonPercent ±±¨îÀY°ª«× ===
+                // === SlotDrivenï¿½Gï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Ï¥ï¿½ skeletonPercent ï¿½ï¿½ï¿½ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½ ===
 
-                // ¨ú±o / «Ø¥ß slot ª¬ºA
+                // ï¿½ï¿½ï¿½o / ï¿½Ø¥ï¿½ slot ï¿½ï¿½ï¿½A
                 if (!slotHeadStates.TryGetValue(slot, out var stateData))
                 {
                     stateData = new SlotHeadStateData();
                     slotHeadStates[slot] = stateData;
                 }
 
-                //// §PÂ_¬O§_Ä²µo¡]¥u¬Ý¬O§_¬°«D 0¡^
+                //// ï¿½Pï¿½_ï¿½Oï¿½_Ä²ï¿½oï¿½]ï¿½uï¿½Ý¬Oï¿½_ï¿½ï¿½ï¿½D 0ï¿½^
                 //float inputPercent = skeletonPercent[allowedPerson];
                 ////Debug.Log($"inputPercent:{inputPercent}, cat.IsPoppedUpTriggered:{cat.IsPoppedUpTriggered}");
                 //if(inputPercent > 0 && !cat.IsPoppedUpTriggered && !cat.IsPoppedUpTriggered)
@@ -926,17 +934,24 @@ public class CatManager : MonoBehaviour
 
                 float inputPercent = skeletonPercent[allowedPerson];
 
-                // Åª¨ú³o­Ó slot ¤w¸g³sÄò¦s¦b¦h¤[¡]¦b Update ¸Ì²Ö¿nªº¡^
+                // Åªï¿½ï¿½ï¿½oï¿½ï¿½ slot ï¿½wï¿½gï¿½sï¿½ï¿½sï¿½bï¿½hï¿½[ï¿½]ï¿½b Update ï¿½Ì²Ö¿nï¿½ï¿½ï¿½^
                 float presenceDuration = 0f;
                 slotPresenceDuration.TryGetValue(slot, out presenceDuration);
 
-                // ¥u¦³¡u³sÄò¦s¦b®É¶¡¹F¼Ð¡v¤~¤¹³\«_ÀY
+                // ï¿½uï¿½ï¿½ï¿½uï¿½sï¿½ï¿½sï¿½bï¿½É¶ï¿½ï¿½Fï¿½Ð¡vï¿½~ï¿½ï¿½ï¿½\ï¿½_ï¿½Y
                 if (presenceDuration >= slotConfirmSeconds &&
                     inputPercent > 0f &&
                     !cat.IsPoppedUpTriggered)
                 {
                     cat.IsPoppedUpTriggered = true;
                     StartCoroutine(CatPoppingUp(cat));
+                }
+
+                // Same confirmation rule as above, but used purely to build the
+                // global "anyone confirmed present" aggregate (no side effects here).
+                if (presenceDuration >= slotConfirmSeconds && inputPercent > 0f)
+                {
+                    anyConfirmedThisFrame = true;
                 }
 
                 if (!stateData.triggered && inputPercent > 0f)
@@ -946,9 +961,9 @@ public class CatManager : MonoBehaviour
                     stateData.timer = 0f;
                 }
 
-                // STEP 2 ¼È®É¦æ¬°¡G
-                // - ¥u­n slot ¤w³Q trigger
-                // - ÀY´N©T©wÅã¥Ü¦b 50
+                // STEP 2 ï¿½È®É¦æ¬°ï¿½G
+                // - ï¿½uï¿½n slot ï¿½wï¿½Q trigger
+                // - ï¿½Yï¿½Nï¿½Tï¿½wï¿½ï¿½Ü¦b 50
                 //float displayPercent = 0f;
 
                 switch (stateData.state)
@@ -979,11 +994,25 @@ public class CatManager : MonoBehaviour
 
             }
 
+            // Fire global presence change events on rising/falling edge only.
+            if (anyConfirmedThisFrame != anyoneConfirmedPresent)
+            {
+                anyoneConfirmedPresent = anyConfirmedThisFrame;
+                if (anyoneConfirmedPresent)
+                {
+                    OnAnyoneConfirmedPresent?.Invoke();
+                }
+                else
+                {
+                    OnEveryoneLeft?.Invoke();
+                }
+            }
+
         }
     }
     private IEnumerator CatPoppingUp(CatMotionController cat)
     {
-        Debug.Log($"CatPoppingUp°õ¦æ");
+        Debug.Log($"CatPoppingUpï¿½ï¿½ï¿½ï¿½");
         if (cat.IsPoppedUpTriggered)
         {
             cat.isForceUpdateHeadPosition = true;
@@ -995,7 +1024,7 @@ public class CatManager : MonoBehaviour
             yield return new WaitUntil(() => cat.isReached100);
             cat.isForceUpdateHeadPosition = false;
             Debug.Log($"isReached100:{cat.isReached100},\n isForceUpdateHeadPosition:{cat.isForceUpdateHeadPosition}");
-            // ===== ÅéÅç§¹¦¨ ¡÷ ¤H¦¸ +1 =====
+            // ===== ï¿½ï¿½ï¿½ç§¹ï¿½ï¿½ ï¿½ï¿½ ï¿½Hï¿½ï¿½ +1 =====
             if (experienceCounter != null)
             {
                 var data = experienceCounter.LoadCounter();
@@ -1052,17 +1081,17 @@ public class CatManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ®Ú¾Ú¡u³sÄò¥X²{¦¸¼Æ¡v¨M©w¬O§_¤¹³\¤Á´« skeletonPercent¡C
-    /// - ¨C­Ó personIndex ¦U¦Û¦³¿W¥ßªº counter¡C
-    /// - ¥u¦³·í newValue ³sÄò¥X²{¹F¨ì skeletonPercentThresholdCount ¦¸®É¡A
-    ///   ¤~·|¯uªº¤Á´« currentValue¡C
-    /// - ¦^¶Ç­È = ¥Ø«e¤¹³\¨Ï¥ÎªºÃ­©w¼Æ­È¡C
+    /// ï¿½Ú¾Ú¡uï¿½sï¿½ï¿½Xï¿½{ï¿½ï¿½ï¿½Æ¡vï¿½Mï¿½wï¿½Oï¿½_ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ skeletonPercentï¿½C
+    /// - ï¿½Cï¿½ï¿½ personIndex ï¿½Uï¿½Û¦ï¿½ï¿½Wï¿½ßªï¿½ counterï¿½C
+    /// - ï¿½uï¿½ï¿½ï¿½ï¿½ newValue ï¿½sï¿½ï¿½Xï¿½{ï¿½Fï¿½ï¿½ skeletonPercentThresholdCount ï¿½ï¿½ï¿½É¡A
+    ///   ï¿½~ï¿½|ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ currentValueï¿½C
+    /// - ï¿½^ï¿½Ç­ï¿½ = ï¿½Ø«eï¿½ï¿½ï¿½\ï¿½Ï¥Îªï¿½Ã­ï¿½wï¿½Æ­È¡C
     /// </summary>
     private float GetStableSkeletonPercent(int personIndex, float newValue)
     {
         if (!skeletonPercentCounters.TryGetValue(personIndex, out var counter))
         {
-            // ²Ä¤@¦¸¬Ý¨ì³o­Ó¤H¡G±j¨î±q 0 ¶}©l
+            // ï¿½Ä¤@ï¿½ï¿½ï¿½Ý¨ï¿½oï¿½Ó¤Hï¿½Gï¿½jï¿½ï¿½q 0 ï¿½}ï¿½l
             counter = new SkeletonPercentCounter
             {
                 currentValue = 0f,
@@ -1072,10 +1101,10 @@ public class CatManager : MonoBehaviour
             };
 
             skeletonPercentCounters[personIndex] = counter;
-            return counter.currentValue; // ¤@¶}©l¤@©w¦^¶Ç 0
+            return counter.currentValue; // ï¿½@ï¿½}ï¿½lï¿½@ï¿½wï¿½^ï¿½ï¿½ 0
         }
 
-        // ¦pªG·s­È¸ò¥Ø«eÃ­©w­È¤@¼Ë ¡÷ µL¶·¤Á´«¡A­«¸m pending ­p¼Æ
+        // ï¿½pï¿½Gï¿½sï¿½È¸ï¿½Ø«eÃ­ï¿½wï¿½È¤@ï¿½ï¿½ ï¿½ï¿½ ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½m pending ï¿½pï¿½ï¿½
         if (Mathf.Approximately(newValue, counter.currentValue))
         {
             counter.pendingValue = newValue;
@@ -1083,26 +1112,26 @@ public class CatManager : MonoBehaviour
             return counter.currentValue;
         }
 
-        // ·s­È»P¥Ø«eÃ­©w­È¤£¦P¡GÀË¬d pending ª¬ºA
+        // ï¿½sï¿½È»Pï¿½Ø«eÃ­ï¿½wï¿½È¤ï¿½ï¿½Pï¿½Gï¿½Ë¬d pending ï¿½ï¿½ï¿½A
         if (!Mathf.Approximately(newValue, counter.pendingValue))
         {
-            // ´«¤F¤@­Ó·sªº­Ô¿ï­È¡A­«·s­p¼Æ
+            // ï¿½ï¿½ï¿½Fï¿½@ï¿½Ó·sï¿½ï¿½ï¿½Ô¿ï¿½È¡Aï¿½ï¿½ï¿½sï¿½pï¿½ï¿½
             counter.pendingValue = newValue;
             counter.pendingCount = 1;
         }
         else
         {
-            // ­Ô¿ï­È»P¤W¦¸¬Û¦P¡A¼W¥[³sÄò¦¸¼Æ
+            // ï¿½Ô¿ï¿½È»Pï¿½Wï¿½ï¿½ï¿½Û¦Pï¿½Aï¿½Wï¿½[ï¿½sï¿½ò¦¸¼ï¿½
             counter.pendingCount++;
         }
 
-        // ©|¥¼¹F¨ìªùÂe ¡÷ ¤£¤Á´«¡Aºû«ù­ì¥»ªº currentValue
+        // ï¿½|ï¿½ï¿½ï¿½Fï¿½ï¿½ï¿½ï¿½e ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ì¥»ï¿½ï¿½ currentValue
         if (counter.pendingCount < skeletonPercentThresholdCount)
             return counter.currentValue;
 
-        // ¹F¨ìªùÂe ¡÷ ¥¿¦¡¤Á´«
+        // ï¿½Fï¿½ï¿½ï¿½ï¿½e ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         counter.currentValue = counter.pendingValue;
-        counter.pendingCount = 0; // ­«¸m­p¼Æ¡Aµ¥«Ý¤U¤@¦¸ÅÜ¤Æ
+        counter.pendingCount = 0; // ï¿½ï¿½ï¿½mï¿½pï¿½Æ¡Aï¿½ï¿½ï¿½Ý¤Uï¿½@ï¿½ï¿½ï¿½Ü¤ï¿½
 
         return counter.currentValue;
     }
@@ -1110,7 +1139,7 @@ public class CatManager : MonoBehaviour
     {
         public SlotHeadState state = SlotHeadState.Idle;
         public float timer = 0f;
-        public bool triggered = false; // ¬O§_¤w³Q«D 0 skeletonPercent Ä²µo
+        public bool triggered = false; // ï¿½Oï¿½_ï¿½wï¿½Qï¿½D 0 skeletonPercent Ä²ï¿½o
     }
     public void SetAngleShiftFromString(string value)
     {
@@ -1203,7 +1232,7 @@ public class CatManager : MonoBehaviour
 
     private float SlotToWorldAngle(int slot)
     {
-        // slot ¬O internalAngle ªÅ¶¡
+        // slot ï¿½O internalAngle ï¿½Å¶ï¿½
         float world = internalShift - slot;
 
         if (world < 0f)
