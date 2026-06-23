@@ -119,6 +119,11 @@ public class CatManager : MonoBehaviour
     public event Action OnEveryoneLeft;
     private bool anyoneConfirmedPresent = false;
 
+    // Fires when all slots have been missing data for >= dataInterruptDestroyDelaySeconds.
+    // Indicates permanent departure (all experience visitors have truly left the area).
+    public event Action OnEveryonePermanentlyLeft;
+    private bool anyonePermanentlyPresent = false;
+
     // ======== �� skeletonPercent �ܧ���e�]�w ========
     [Header("Skeleton Percent Switch Threshold")]
     [SerializeField]
@@ -207,9 +212,9 @@ public class CatManager : MonoBehaviour
                 // ����G�R��������
                 if (slotRemoving.Contains(slot))
                 {
-                    Debug.Log(
-                        $"[SlotRemoveSkip] slot {slot} already removing, skip"
-                    );
+                    // Debug.Log(
+                    //     $"[SlotRemoveSkip] slot {slot} already removing, skip"
+                    // );
                 }
                 else
                 {
@@ -246,6 +251,34 @@ public class CatManager : MonoBehaviour
                 //Debug.Log($"[SlotActive] slot {slot} last seen {missingTime:F2}s ago, presence={duration:F2}s");
             }
         }
+
+        // Check if all slots have been permanently missing (for >= dataInterruptDestroyDelaySeconds).
+        bool allSlotsPermanentlyGone = slotLastSeenTime.Count > 0;
+
+        foreach (var kv in slotLastSeenTime)
+        {
+            float missingTime = Time.time - kv.Value;
+            if (missingTime < dataInterruptDestroyDelaySeconds)
+            {
+                allSlotsPermanentlyGone = false;
+                break;
+            }
+        }
+        if (allSlotsPermanentlyGone == true || anyonePermanentlyPresent == true)
+        {
+            Debug.Log($"[CatManager] After foreach: allSlotsPermanentlyGone={allSlotsPermanentlyGone}, anyonePermanentlyPresent={anyonePermanentlyPresent}");
+        }
+
+        // Fire permanent departure event on rising edge only.
+        if (allSlotsPermanentlyGone != anyonePermanentlyPresent)
+        {
+            anyonePermanentlyPresent = allSlotsPermanentlyGone;
+            if (anyonePermanentlyPresent)
+            {
+                OnEveryonePermanentlyLeft?.Invoke();
+            }
+        }
+
         durationOfInterruption += Time.deltaTime;
         // ��Ƥ��_����
         if (durationOfInterruption > dataInterruptToCollapseSeconds)

@@ -1585,6 +1585,7 @@ GameObject:
   - component: {fileID: 316575276}
   - component: {fileID: 316575278}
   - component: {fileID: 316575277}
+  - component: {fileID: 316575279}
   m_Layer: 0
   m_Name: WellSoundController
   m_TagString: Untagged
@@ -1719,6 +1720,14 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!81 &316575279
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 316575275}
+  m_Enabled: 1
 --- !u!1 &318750696
 GameObject:
   m_ObjectHideFlags: 0
@@ -2115,7 +2124,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &399953756
 Transform:
   m_ObjectHideFlags: 0
@@ -5315,7 +5324,6 @@ GameObject:
   m_Component:
   - component: {fileID: 963194228}
   - component: {fileID: 963194227}
-  - component: {fileID: 963194226}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -5323,14 +5331,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!81 &963194226
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 963194225}
-  m_Enabled: 1
 --- !u!20 &963194227
 Camera:
   m_ObjectHideFlags: 0
@@ -8668,9 +8668,6 @@ MonoBehaviour:
   - clips:
     - {fileID: 32900000, guid: eba3628e33b94b54c9f25475bea07cb6, type: 3}
     - {fileID: 32900000, guid: 11ee55203780728408468036f5b62f70, type: 3}
-  - clips:
-    - {fileID: 32900000, guid: 4ebd5d6480469fd4fb769a852b4aac02, type: 3}
-    - {fileID: 32900000, guid: 0e12a9d03fb92704baf7aaa97e5296ed, type: 3}
   dataInterruptToCollapseSecondsInput: {fileID: 500415483}
   dataInterruptToCollapseSeconds: 1
   dataInterruptDestroyDelaySecondsInput: {fileID: 604116660}

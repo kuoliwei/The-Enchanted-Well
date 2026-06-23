@@ -90,10 +90,10 @@ public class CatMotionController : MonoBehaviour
             {
                 isReached0 = false;
             }
-            Debug.Log($"isReached100:{isReached0},\n IsCollapsed:{IsCollapsed},\n isForceUpdateHeadPosition:{isForceUpdateHeadPosition}");
+            // Debug.Log($"isReached100:{isReached0},\n IsCollapsed:{IsCollapsed},\n isForceUpdateHeadPosition:{isForceUpdateHeadPosition}");
         }
 
-        if(!Mathf.Approximately(targetY, currentY))
+        if (!Mathf.Approximately(targetY, currentY))
         {
             // 每幀平滑靠近目標
             currentY = Mathf.Lerp(currentY, targetY, Time.deltaTime * smoothSpeed);

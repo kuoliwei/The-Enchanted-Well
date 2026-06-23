@@ -12,10 +12,10 @@
     "port": 9999
   },
   "catAppearance": {
-    "secondsToConfirmPeopleShowUp": 0.5,
+    "secondsToConfirmPeopleShowUp": 3.0,
     "secondsToRevealFullBody": 3.0,
     "SecondsPersonLeavesTemporarily": 1.0,
-    "SecondsPersonLeavesPermanently": 5.0
+    "SecondsPersonLeavesPermanently": 3.0
   },
   "screenSettings": {
     "widthRatio": 1920,

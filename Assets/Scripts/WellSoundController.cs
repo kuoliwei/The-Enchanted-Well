@@ -25,6 +25,7 @@ public class WellSoundController : MonoBehaviour
     private State state = State.Idle;
     private Coroutine activeCoroutine;
     private float baseVolume;
+    private bool pendingIdleAfterFade = false;
 
     private void Awake()
     {
@@ -35,52 +36,65 @@ public class WellSoundController : MonoBehaviour
     private void OnEnable()
     {
         catManager.OnAnyoneConfirmedPresent += HandleAnyoneConfirmedPresent;
-        catManager.OnEveryoneLeft += HandleEveryoneLeft;
+        catManager.OnEveryonePermanentlyLeft += HandleEveryonePermanentlyLeft;
     }
 
     private void OnDisable()
     {
         catManager.OnAnyoneConfirmedPresent -= HandleAnyoneConfirmedPresent;
-        catManager.OnEveryoneLeft -= HandleEveryoneLeft;
+        catManager.OnEveryonePermanentlyLeft -= HandleEveryonePermanentlyLeft;
     }
 
     private void HandleAnyoneConfirmedPresent()
     {
+        Debug.Log($"[Sound] OnAnyoneConfirmedPresent triggered, current state: {state}");
         if (state != State.Idle) return;
 
         state = State.Playing;
+        Debug.Log($"[Sound] State changed to Playing, starting PlayThenFadeOut");
         StopActiveCoroutine();
         activeCoroutine = StartCoroutine(PlayThenFadeOut());
     }
 
-    private void HandleEveryoneLeft()
+    private void HandleEveryonePermanentlyLeft()
     {
+        Debug.Log($"[Sound] OnEveryonePermanentlyLeft triggered, current state: {state}");
         switch (state)
         {
             case State.Playing:
+                Debug.Log($"[Sound] State is Playing, stopping current coroutine and starting FadeOutAndStop");
+                pendingIdleAfterFade = true;
                 StopActiveCoroutine();
                 activeCoroutine = StartCoroutine(FadeOutAndStop());
                 break;
 
             case State.WaitingForClear:
+                Debug.Log($"[Sound] State is WaitingForClear, changing to Idle");
                 state = State.Idle;
+                break;
+
+            case State.Idle:
+                Debug.Log($"[Sound] State is already Idle, no action needed");
                 break;
         }
     }
 
     private IEnumerator PlayThenFadeOut()
     {
+        Debug.Log($"[Sound] PlayThenFadeOut START");
         audioSource.clip = rippleClip;
         audioSource.volume = baseVolume;
         audioSource.Play();
 
         yield return new WaitForSeconds(playDuration);
 
+        Debug.Log($"[Sound] PlayThenFadeOut END (10s timeout), starting FadeOutAndStop");
         activeCoroutine = StartCoroutine(FadeOutAndStop());
     }
 
     private IEnumerator FadeOutAndStop()
     {
+        Debug.Log($"[Sound] FadeOutAndStop START, state changing to WaitingForClear");
         state = State.WaitingForClear;
 
         float startVolume = audioSource.volume;
@@ -95,6 +109,15 @@ public class WellSoundController : MonoBehaviour
         audioSource.Stop();
         audioSource.volume = baseVolume;
         activeCoroutine = null;
+
+        if (pendingIdleAfterFade)
+        {
+            pendingIdleAfterFade = false;
+            state = State.Idle;
+            Debug.Log($"[Sound] FadeOutAndStop was triggered by permanent departure, state changing straight to Idle");
+        }
+
+        Debug.Log($"[Sound] FadeOutAndStop END, state is now: {state}");
     }
 
     private void StopActiveCoroutine()
