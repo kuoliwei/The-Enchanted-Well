@@ -1623,7 +1623,7 @@ MonoBehaviour:
   catManager: {fileID: 1535897777}
   rippleClip: {fileID: 8300000, guid: 8f52dda15cf0d2c43b09ef3338fb7316, type: 3}
   playDuration: 10
-  fadeOutDuration: 0.5
+  fadeOutDuration: 1
 --- !u!82 &316575278
 AudioSource:
   m_ObjectHideFlags: 0
