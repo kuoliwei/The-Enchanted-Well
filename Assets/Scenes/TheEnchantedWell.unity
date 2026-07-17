@@ -2153,7 +2153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   catManager: {fileID: 1535897777}
-  skeletonPercentStates: 00000000000000000000000000000000
+  skeletonPercentStates: 64000000640000006400000064000000
   angles:
   - 0
   - 0
@@ -8359,6 +8359,7 @@ GameObject:
   - component: {fileID: 1509840474}
   - component: {fileID: 1509840476}
   - component: {fileID: 1509840475}
+  - component: {fileID: 1509840477}
   m_Layer: 5
   m_Name: RawImage
   m_TagString: Untagged
@@ -8397,7 +8398,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 245496261885f944181c526449815462, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -8405,7 +8406,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 8400000, guid: 4416266f3f95daf48a3c077b44d77801, type: 2}
+  m_Texture: {fileID: 0}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -8420,6 +8421,103 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1509840473}
   m_CullTransparentMesh: 1
+--- !u!114 &1509840477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1509840473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb4ad044a98bb2c468332b7061788930, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPresetIndex: 0
+  blurRadius: 0
+  waveCountRadial: 0
+  waveCountAngular: 0
+  waveAnimate: 1
+  waveFrequenciesRadial:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  waveSpeedsRadial:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  waveStrengthsRadial:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  ampVarSpeedsRadial:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  waveFrequenciesAngular:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  waveSpeedsAngular:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  waveStrengthsAngular:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  ampVarSpeedsAngular:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  enablePulse: 0
+  pulseMultiplier: 1
+  centerBrightnessMultiplier: 1
+  brightnessRange: 0.45
+  brightnessOffset: 0
+  brightnessFalloff: 0.8
+  fadeStartRadius: 1
+  fadeEndAlpha: 0
 --- !u!1 &1512440639
 GameObject:
   m_ObjectHideFlags: 0

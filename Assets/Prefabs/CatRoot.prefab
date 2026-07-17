@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 441756532725209966}
   - component: {fileID: 7649591135629862805}
   - component: {fileID: 4711892816336560868}
+  - component: {fileID: 6074523419085704629}
   m_Layer: 5
   m_Name: CatVideo
   m_TagString: Untagged
@@ -126,6 +127,106 @@ MonoBehaviour:
     y: 0
     width: 1
     height: 1
+--- !u!114 &6074523419085704629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3942222158172749147}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48711c50c54516b439de4cbaba628680, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPresetIndex: 0
+  blurRadius: 0
+  opaquePoint: 0.001
+  transparentPoint: 0.0002
+  maxAlphaValue: 0.848
+  waveCountX: 0
+  waveCountY: 0
+  waveAnimate: 1
+  waveFrequenciesX:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  waveSpeedsX:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  waveStrengthsX:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  ampVarSpeedsX:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  waveFrequenciesY:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  waveSpeedsY:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  waveStrengthsY:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  ampVarSpeedsY:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  enablePulse: 0
+  pulseMultiplier: 1
+  centerBrightnessMultiplier: 1
+  brightnessRange: 0.45
+  brightnessOffset: 0
+  brightnessFalloff: 0.8
+  fadeStartY: 1
+  fadeEndAlpha: 0
 --- !u!1 &6643904518807417630
 GameObject:
   m_ObjectHideFlags: 0
@@ -181,6 +282,11 @@ MonoBehaviour:
   yAt50: -150
   yAt100: -17
   smoothSpeed: 2
+  IsPoppedUpTriggered: 0
+  isForceUpdateHeadPosition: 0
+  hasPoppedAndCollapsed: 0
+  isReached100: 0
+  isReached0: 0
 --- !u!1 &8299259561784863799
 GameObject:
   m_ObjectHideFlags: 0

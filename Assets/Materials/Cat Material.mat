@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Cat Material
-  m_Shader: {fileID: 4800000, guid: 19f181788837ebe48a86fecf4fb96a4c, type: 3}
+  m_Shader: {fileID: 4800000, guid: 39e05e28e90e53741a9229ecc75a6390, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -61,11 +61,17 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _BlurRadius: 8
+    - _BlurRadius: 6.49
+    - _BrightnessFalloff: 0.8
+    - _BrightnessOffset: 0
+    - _BrightnessRange: 0.45
     - _BumpScale: 1
+    - _CenterBrightnessMultiplier: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
+    - _FadeEndAlpha: 0
+    - _FadeStartY: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
@@ -80,6 +86,9 @@ Material:
     - _SrcBlend: 1
     - _TransparentPoint: 0.0002
     - _UVSec: 0
+    - _WaveAnimate: 1
+    - _WaveCountX: 3
+    - _WaveCountY: 3
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}

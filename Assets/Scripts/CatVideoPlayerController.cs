@@ -85,6 +85,8 @@ public class CatVideoPlayerController : MonoBehaviour
         }
 
         rawImg.material = Instantiate(baseMaterial);
+
+        GetComponent<BlackKeyWaveBlurController>()?.SetMaterial(rawImg.material);
     }
 
     private void CreateNewRenderTexture()
