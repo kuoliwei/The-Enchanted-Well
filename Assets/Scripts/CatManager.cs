@@ -12,6 +12,13 @@ public class CatVideoSet
     public VideoClip[] clips;
 }
 
+// 與 CatVideoSet 平行的新方案：儲存 PNG 影格序列的資料夾名稱，而非 VideoClip。
+[System.Serializable]
+public class CatFrameSequenceSet
+{
+    public string[] sequenceNames;
+}
+
 public class CatManager : MonoBehaviour
 {
     public enum CatSpawnMode
@@ -42,6 +49,10 @@ public class CatManager : MonoBehaviour
 
     [Header("�ߪ��v����")]
     [SerializeField] private List<CatVideoSet> catVideoSets;
+
+    [Header("影格序列播放（已完全取代 VideoPlayer，舊路徑已封死無法再被啟用）")]
+    private const bool useFrameSequenceMode = true;   // 鎖死為 true：不再是 Inspector 可調欄位，場景裡殘留的舊序列化值會被忽略
+    [SerializeField] private List<CatFrameSequenceSet> catFrameSequenceSets;
 
     [Header("��Ƥ��_�P�w����")]
     [SerializeField] private InputField dataInterruptToCollapseSecondsInput;
@@ -302,7 +313,8 @@ public class CatManager : MonoBehaviour
         availableCatIndices.Clear();
         catToVideoIndex.Clear();
 
-        for (int i = 0; i < catVideoSets.Count; i++)
+        int count = useFrameSequenceMode ? catFrameSequenceSets.Count : catVideoSets.Count;
+        for (int i = 0; i < count; i++)
             availableCatIndices.Add(i);
     }
     private int DrawRandomUnusedCatIndex()
@@ -559,6 +571,25 @@ public class CatManager : MonoBehaviour
             return;
         }
 
+        Debug.Log($"[CatManager] AssignRandomCatVideoSet: useFrameSequenceMode={useFrameSequenceMode}");
+
+        if (useFrameSequenceMode)
+        {
+            if (catFrameSequenceSets == null || catFrameSequenceSets.Count == 0)
+            {
+                Debug.LogWarning("[CatManager] catFrameSequenceSets 是空的");
+                return;
+            }
+
+            int seqIndex = DrawRandomUnusedCatIndex();
+            if (seqIndex < 0)
+                return;
+            vp.frameSequenceNames = catFrameSequenceSets[seqIndex].sequenceNames;
+            catToVideoIndex[cat] = seqIndex;
+            Debug.Log($"[CatManager] ★ 指派 Frame Sequence 組合 #{seqIndex}: [{string.Join(", ", catFrameSequenceSets[seqIndex].sequenceNames)}]");
+            return;
+        }
+
         if (catVideoSets == null || catVideoSets.Count == 0)
         {
             Debug.LogWarning("[CatManager] catVideoSets �O�Ū�");
@@ -572,6 +603,7 @@ public class CatManager : MonoBehaviour
         vp.videoClips = catVideoSets[index].clips;
         // �O���o���ߨϥΪ��v�� index�]����R���ɭn�^���^
         catToVideoIndex[cat] = index;
+        Debug.Log($"[CatManager] ▲ 指派 VideoClips 組合 #{index}（舊模式）");
     }
 
     private void OnSkeletonFrame(SkeletonFrame frame)

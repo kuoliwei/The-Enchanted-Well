@@ -97,3 +97,6 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Generated frame sequences (large PNG files)
+/[Aa]ssets/[Rr]esources/[Vv]ideo[Cc]lips/*_frames/

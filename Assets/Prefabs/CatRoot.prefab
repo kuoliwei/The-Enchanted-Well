@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7649591135629862805}
   - component: {fileID: 4711892816336560868}
   - component: {fileID: 6074523419085704629}
+  - component: {fileID: 5241893762018475930}
   m_Layer: 5
   m_Name: CatVideo
   m_TagString: Untagged
@@ -55,6 +56,7 @@ MonoBehaviour:
   videoClips: []
   playOnStart: 1
   loopPlaylist: 1
+  frameSequenceNames: []
   baseMaterial: {fileID: 2100000, guid: dec9aef812f799847a680a5093c6023a, type: 2}
 --- !u!328 &441756532725209966
 VideoPlayer:
@@ -143,7 +145,7 @@ MonoBehaviour:
   blurRadius: 0
   opaquePoint: 0.001
   transparentPoint: 0.0002
-  maxAlphaValue: 0.848
+  maxAlphaValue: 1
   waveCountX: 0
   waveCountY: 0
   waveAnimate: 1
@@ -227,6 +229,19 @@ MonoBehaviour:
   brightnessFalloff: 0.8
   fadeStartY: 1
   fadeEndAlpha: 0
+--- !u!114 &5241893762018475930
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3942222158172749147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a7f129f5f69907409e364b39e7aba3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fps: 15
 --- !u!1 &6643904518807417630
 GameObject:
   m_ObjectHideFlags: 0

@@ -2156,9 +2156,9 @@ MonoBehaviour:
   skeletonPercentStates: 64000000640000006400000064000000
   angles:
   - 113
-  - 160
+  - 162
   - 203
-  - 251
+  - 250
   liveUpdate: 0
   unstableMode: 1
   dropEveryNFrames: 2
@@ -8766,6 +8766,19 @@ MonoBehaviour:
   - clips:
     - {fileID: 32900000, guid: eba3628e33b94b54c9f25475bea07cb6, type: 3}
     - {fileID: 32900000, guid: 11ee55203780728408468036f5b62f70, type: 3}
+  catFrameSequenceSets:
+  - sequenceNames:
+    - "\uFF08\u864E\u6591\u8C93\u6C34\u6CE2\uFF09\uFF3F01final"
+    - "\uFF08\u864E\u6591\u8C93\u6C34\u6CE2\uFF09\uFF3F02final"
+  - sequenceNames:
+    - "\uFF08\u6A58\u8C93\u6C34\u6CE2\uFF09\uFF3F01final"
+    - "\uFF08\u6A58\u8C93\u6C34\u6CE2\uFF09\uFF3F02final"
+  - sequenceNames:
+    - "\uFF08\u4E09\u82B1\u6C34\u6CE2\uFF09\uFF3F01final"
+    - "\uFF08\u4E09\u82B1\u6C34\u6CE2\uFF09\uFF3F02final"
+  - sequenceNames:
+    - "\uFF08\u4E09\u82B12\u6C34\u6CE2\uFF09\uFF3F01final"
+    - "\uFF08\u4E09\u82B1\u8C932\uFF09\uFF3F01final"
   dataInterruptToCollapseSecondsInput: {fileID: 500415483}
   dataInterruptToCollapseSeconds: 1
   dataInterruptDestroyDelaySecondsInput: {fileID: 604116660}
